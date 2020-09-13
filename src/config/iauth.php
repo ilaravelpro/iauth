@@ -22,8 +22,9 @@ return [
             'type' => 'auto',
             'ever' => true
         ],
-        'forgot' => true,
-        'logout' => true,
+        'register' => true,
+        'recovery' => true,
+        'revoke' => true,
         'get' => true,
         'update' => true,
     ],

@@ -4,8 +4,7 @@
 namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\Auth;
 
 use App\User;
-use iLaravel\iAuth\iApp\Http\Requests\iLaravel as Request;
-use Illuminate\Auth\AuthenticationException;
+use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Illuminate\Support\Facades\Hash;
 
 trait Register
@@ -13,23 +12,19 @@ trait Register
     public function register(Request $request)
     {
         $this->username_method($request);
-        $user = User::where($this->username_method, $request->input($this->username_method))->first();
-        if ($user) {
+        $user = $this->model::where($this->username_method, $request->input($this->username_method))->first();
+        if ($user)
             return $this->response("user duplicated", null, 401);
-        }
-        $register = new User;
+        $register = new $this->model;
         $register->password = Hash::make($request->input('password'));
         $register->{$this->username_method} = $request->input($this->username_method);
-
-        if (config('auth.enter.auto_verify')) {
+        if (!iauth('modes.verify.status'))
             $register->status = 'active';
-        }
-        $register->type = 'user';
+        $register->role = 'user';
         $register->save();
-        if (config('auth.enter.auto_verify')) {
-            return $this->login($request);
-        }
-        $this->statusMessage = 'registred';
+        if (!iauth('modes.verify.status'))
+            return $this->authorizing($request);
+        $this->statusMessage = 'Authorizing successfully.';
         return $this->show($request, $this->findOrFail($register->serial ?: $register->id));
     }
 }

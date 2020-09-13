@@ -3,7 +3,7 @@
 
 namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\Auth;
 
-use iLaravel\iAuth\iApp\Http\Requests\iLaravel as Request;
+use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 
 trait UsernameMethod
 {
@@ -12,7 +12,11 @@ trait UsernameMethod
         if ($this->username_method) return $this->username_method;
         $username = $request->input('username');
         $type = 'username';
-        if (ctype_digit($username)) {
+        if ($this->model::id($username)) {
+            $type = 'id';
+            $request->request->remove('username');;
+            $request->merge([$type => $this->model::id($username)]);
+        } elseif (ctype_digit($username)) {
             $type = 'mobile';
             $request->request->remove('username');;
             $request->merge([$type => $username]);
