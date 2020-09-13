@@ -21,7 +21,7 @@ trait Authorize
         if (iauth('modes.authorize.password') && $request->input('password')) {
             if (iauth('modes.verify.ever')) {
                 if (in_array(iauth('modes.verify.method'), ['all', 'mobile'])){
-                     
+
                 }
                 if (in_array(iauth('modes.verify.method'), ['all', 'email'])){
 
