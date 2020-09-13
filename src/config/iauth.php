@@ -18,6 +18,7 @@ return [
             'password' => true
         ],
         'verify' => [
+            'method' => 'all',
             'status' => true,
             'type' => 'auto',
             'ever' => true
