@@ -12,14 +12,15 @@ return [
         ],
     ],
     'modes' => [
-        'login' => [
+        'authorize' => [
             'status' => true,
             'type' => 'auto',
             'password' => true
         ],
-        'register' => [
+        'verify' => [
             'status' => true,
-            'type' => 'auto'
+            'type' => 'auto',
+            'ever' => true
         ],
         'forgot' => true,
         'logout' => true,

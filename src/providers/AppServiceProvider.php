@@ -2,14 +2,13 @@
 
 namespace iLaravel\iAuth\Providers;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->mergeConfigFrom(iauth_path('config/iauth.php'), 'ilaravel.iauth');
-
         if($this->app->runningInConsole())
         {
             if (iauth('database.migrations.include', true)) $this->loadMigrationsFrom(iauth_path('database/migrations'));
@@ -19,5 +18,15 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         parent::register();
+        $this->mergeConfigFrom(iauth_path('config/iauth.php'), 'ilaravel.iauth');
+        Config::set([
+            'ilaravel.auth.login' => false,
+            'ilaravel.auth.register' => false,
+            'ilaravel.auth.auto_register' => false,
+            'ilaravel.auth.forgot' => false,
+            'ilaravel.auth.logout' => false,
+            'ilaravel.auth.get' => false,
+            'ilaravel.auth.update' => false,
+        ]);
     }
 }
