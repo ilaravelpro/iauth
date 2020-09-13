@@ -15,12 +15,10 @@ class CreateAuthTheoriesMetaTable extends Migration
     {
         Schema::create('auth_theories_meta', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('point_id')->unsigned()->nullable();
-            $table->foreign('point_id')->references('id')->on('windy_points')->onDelete('cascade');
+            $table->bigInteger('theory_id')->unsigned()->nullable();
+            $table->foreign('theory_id')->references('id')->on('auth_theories')->onDelete('cascade');
             $table->string('key')->nullable();
             $table->string('value')->nullable();
-            $table->string('unit')->nullable();
-            $table->integer('level')->nullable();
             $table->string('type')->default('null');
             $table->timestamps();
         });
