@@ -41,8 +41,6 @@ class AuthVerify
             'user_id' => $this->user->id,
             'type' => $type,
             'bridge' => $bridge,
-            'token' => Str::random(110),
-            'pin' => rand(100000, 999999),
             'expires_at' => Carbon::createFromTimestamp(time() + $expires_at)
         ]);
     }

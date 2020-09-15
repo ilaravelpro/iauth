@@ -22,7 +22,6 @@ return [
         'verify' => [
             'status' => true,
             'mode' => 'smart',
-            'bridges' => ['mobile', 'email'],
             'ever' => true,
             'other' => 'email'
         ],

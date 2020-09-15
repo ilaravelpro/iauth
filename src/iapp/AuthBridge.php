@@ -28,7 +28,7 @@ class AuthBridge extends Model
             self::resetRecordsId();
         });
         parent::creating(function (self $event) {
-            if (!$event->token) $event->token = \Str::random(69);
+            if (!$event->token) $event->token = \Str::random(110);
             if (!$event->pin) $event->pin = rand(100000, 999999);
         });
     }

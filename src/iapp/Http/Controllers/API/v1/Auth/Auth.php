@@ -4,8 +4,11 @@
 namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\Auth;
 
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
+use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
+use iLaravel\iAuth\Vendor\AuthBridge;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 trait Auth
 {
@@ -19,24 +22,13 @@ trait Auth
             return $this->register($request);
         }
         if (iauth('methods.verify.ever') && (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true)) {
-            $bridges = [];
-            if (iauth('methods.verify.mode') == 'smart'){
-                $bridges = in_array($this->username_method, ['mobile', 'email']) ? $this->username_method : iauth('methods.verify.other');
-            }
-            switch (iauth('methods.verify.mode')){
-                case 'smart':
-                    $bridges = in_array($this->username_method, ['mobile', 'email']) ? $this->username_method : iauth('methods.verify.other');
-                    break;
-                case 'all':
-                    $bridges = in_array($this->username_method, ['mobile', 'email']) ? $this->username_method : iauth('methods.verify.other');
-                    break;
-            }
-            if (in_array('mobile', iauth('methods.verify.theories'))) {
-
-            }
-            if (in_array('email', iauth('methods.verify.theories'))) {
-
-            }
+            $auth_bridge = AuthBridge::render($request, $this->username_method, $user);
+            $show = new UserSummary($user, $this->username_method);
+            $show->additional([
+                'additional' => ['verify_token' => Str::random(69)]
+            ]);
+            $this->statusMessage = __('The verification code was sent to your :methods',["methods" => implode(" & ", $auth_bridge)]);
+            return $show;
         } elseif (auth()->attempt($this->attempt_rule($request))) {
             return $this->authorizing($request);
         } else {

@@ -29,9 +29,6 @@ class AuthTheory extends Model
         parent::deleting(function (self $event) {
             self::resetRecordsId();
         });
-        parent::creating(function (self $event) {
-            if (!$event->key) $event->key = rand(100000, 999999);
-        });
     }
 
     public function getExpiredAtAttribute($value)
