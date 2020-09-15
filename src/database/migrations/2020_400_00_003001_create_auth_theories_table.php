@@ -17,10 +17,14 @@ class CreateAuthTheoriesTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('key')->nullable();
-            $table->string('type')->nullable();
-            $table->string('method')->nullable();
-            $table->string('mode')->nullable();
+            $table->bigInteger('parent_id')->unsigned()->nullable();
+            $table->foreign('parent_id')->references('id')->on('auth_theories')->onDelete('cascade');
+            $table->string('key', 110)->index();
+            $table->string('value', 110)->nullable();
+            $table->string('theory', 50)->index();
+            $table->string('trigger', 50)->nullable();
+            $table->string('type', 20)->default('action');
+            $table->text('meta')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamps();
         });

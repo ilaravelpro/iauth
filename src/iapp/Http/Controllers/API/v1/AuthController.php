@@ -18,7 +18,7 @@ class AuthController extends Controller
     }
     use Show;
 
-    use Auth\Authorize,
+    use Auth\Auth,
         Auth\Register,
         Auth\Revoke,
         Auth\Me,

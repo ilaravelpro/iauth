@@ -11,23 +11,69 @@ return [
             'include' => true
         ],
     ],
-    'modes' => [
-        'authorize' => [
+    'methods' => [
+        'auth' => [
             'status' => true,
-            'type' => 'auto',
-            'password' => true
+            'password' => [
+                'status' => true,
+                'after' => false
+            ]
         ],
         'verify' => [
-            'method' => 'all',
             'status' => true,
-            'type' => 'auto',
-            'ever' => true
+            'mode' => 'smart',
+            'bridges' => ['mobile', 'email'],
+            'ever' => true,
+            'other' => 'email'
         ],
-        'register' => true,
-        'recovery' => true,
-        'revoke' => true,
-        'get' => true,
-        'update' => true,
+        'recovery' => [
+            'status' => true,
+        ],
+        'revoke' => [
+            'status' => true,
+        ],
+        'get' => [
+            'status' => true,
+        ],
+        'update' => [
+            'status' => true,
+        ],
     ],
+    'bridges' => [
+        'mobile' => [
+            'status' => true,
+            'theories' => ['auth', 'register', 'recovery', 'password', 'mobile']
+        ],
+        'email' => [
+            'status' => true,
+            'theories' => ['auth', 'register', 'recovery', 'password', 'email']
+        ]
+    ],
+    'theories' => [
+        'auth' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Auth::class,
+        ],
+        'register' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Register::class,
+        ],
+        'recovery' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Recovery::class,
+        ],
+        'password' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Password::class,
+        ],
+        'mobile' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Mobile::class,
+        ],
+        'email' => [
+            'status' => true,
+            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Email::class,
+        ],
+    ]
 ];
 ?>
