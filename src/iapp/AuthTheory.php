@@ -29,6 +29,9 @@ class AuthTheory extends Model
         parent::deleting(function (self $event) {
             self::resetRecordsId();
         });
+        parent::creating(function (self $event) {
+            if (!$event->token) $event->token = \Str::random(110);
+        });
     }
 
     public function getExpiredAtAttribute($value)
@@ -77,5 +80,9 @@ class AuthTheory extends Model
             'key' => $this->attributes['key'],
             'theory' => $this->attributes['theory'],
         ];
+    }
+
+    public function bridges(){
+        $this->hasMany(imodal('AuthBridge'), 'theory_id');
     }
 }

@@ -23,6 +23,7 @@ class CreateAuthTheoriesTable extends Migration
             $table->string('value', 110)->nullable();
             $table->string('theory', 50)->index();
             $table->string('trigger', 50)->nullable();
+            $table->string('token')->nullable();
             $table->string('type', 20)->default('action');
             $table->text('meta')->nullable();
             $table->timestamp('expired_at')->nullable();

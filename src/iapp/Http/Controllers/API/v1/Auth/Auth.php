@@ -22,12 +22,12 @@ trait Auth
             return $this->register($request);
         }
         if (iauth('methods.verify.ever') && (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true)) {
-            $auth_bridge = AuthBridge::render($request, $this->username_method, $user);
+            list($methods, $theory) = AuthBridge::render($request, $this->username_method, $user);
             $show = new UserSummary($user, $this->username_method);
+            $this->statusMessage = __('The verification code was sent to your :methods',["methods" => implode(" & ", $methods)]);
             $show->additional([
-                'additional' => ['verify_token' => Str::random(69)]
+                'additional' => ['verify_token' => $theory->token]
             ]);
-            $this->statusMessage = __('The verification code was sent to your :methods',["methods" => implode(" & ", $auth_bridge)]);
             return $show;
         } elseif (auth()->attempt($this->attempt_rule($request))) {
             return $this->authorizing($request);

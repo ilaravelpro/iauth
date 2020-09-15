@@ -18,7 +18,7 @@ class AuthBridge extends Model
 
     protected $casts = [
         'verified_at' => 'datetime',
-        'expired_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -28,8 +28,8 @@ class AuthBridge extends Model
             self::resetRecordsId();
         });
         parent::creating(function (self $event) {
-            if (!$event->token) $event->token = \Str::random(110);
             if (!$event->pin) $event->pin = rand(100000, 999999);
+            if (!$event->expires_at) $event->expires_at =  Carbon::createFromTimestamp(time() + (3 * 60));
         });
     }
 
