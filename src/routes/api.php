@@ -15,6 +15,9 @@ Route::namespace('v1')->prefix('v1')->group(function() {
             Route::post('/{session}', 'AuthSessionController@store')->name('api.iauth.session.store');
             Route::get('/{session}/{token}/{pin}', 'AuthSessionController@verify')->name('api.iauth.session.verify');
             Route::get('/{session}/{token}', 'AuthSessionController@resend')->name('api.iauth.session.resend');
+            Route::get('/agent', function () {
+                dd(request()->userAgent());
+            });
         });
     });
 });

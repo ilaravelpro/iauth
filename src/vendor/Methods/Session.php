@@ -60,6 +60,7 @@ class Session
         $this->method = $method;
         $this->session = $session;
         $this->resource = $resource;
+
         $this->session = new $this->sessionModel(['session' => $this->session]);
         $this->session->key = $this->method;
         $this->session->value = $this->request->input($this->method);
