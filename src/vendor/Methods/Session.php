@@ -35,6 +35,7 @@ class Session
             }
         }
         $this->bridges = Bridge::sort($this->model, $this->session->session, $this->method);
+        return $this->session;
     }
 
     public static function pass(Request $request, $method, $resource, $model = null, $session = 'auth')

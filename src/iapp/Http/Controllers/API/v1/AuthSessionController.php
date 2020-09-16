@@ -8,13 +8,14 @@ use Illuminate\Http\Request;
 
 class AuthSessionController extends Controller
 {
-    public $username_method;
+    public $username_method, $vendor;
 
     public function __construct(Request $request)
     {
         parent::__construct($request);
         $this->model = imodal('User');
         $this->resourceClass = iresource('User');
+        $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
     }
     use Show;
 

@@ -60,7 +60,9 @@ return [
             'count' => 3
         ],
         'models' => [
-
+            'auth' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthTheory\Auth::class
+            ]
         ]
     ]
 ];
