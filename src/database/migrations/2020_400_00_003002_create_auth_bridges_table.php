@@ -15,8 +15,8 @@ class CreateAuthBridgesTable extends Migration
     {
         Schema::create('auth_bridges', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('theory_id')->unsigned();
-            $table->foreign('theory_id')->references('id')->on('auth_theories')->onDelete('cascade');
+            $table->bigInteger('session_id')->unsigned();
+            $table->foreign('session_id')->references('id')->on('auth_sessions')->onDelete('cascade');
             $table->string('method', 100);
             $table->string('pin')->nullable();
             $table->timestamp('verified_at')->nullable();

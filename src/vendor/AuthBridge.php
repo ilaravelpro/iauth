@@ -31,17 +31,12 @@ class AuthBridge
         $theory->key = $method;
         $theory->value = $request->input($method);
         $theory->save();
-        $bridgeModel = imodal('AuthBridge');
         if (in_array('mobile', $self->bridges)) {
-            $theory->bridges()->create([
-                'method' => 'mobile',
-            ]);
+            $theory->bridges()->create(['method' => 'mobile']);
             $methods[] = 'mobile';
         }
         if (in_array('email', $self->bridges)) {
-            $theory->bridges()->create([
-                'method' => 'email',
-            ]);
+            $theory->bridges()->create(['method' => 'email']);
             $methods[] = 'email';
         }
         return [$methods, $theory];

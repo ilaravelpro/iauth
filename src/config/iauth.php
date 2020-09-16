@@ -43,40 +43,25 @@ return [
         ],
     ],
     'bridges' => [
-        'mobile' => [
-            'status' => true,
-            'theories' => ['auth', 'register', 'recovery', 'password', 'mobile']
-        ],
-        'email' => [
-            'status' => true,
-            'theories' => ['auth', 'register', 'recovery', 'password', 'email']
+        'models' => [
+            'mobile' => [
+                'status' => true,
+                'theories' => ['auth', 'register', 'recovery', 'password', 'mobile']
+            ],
+            'email' => [
+                'status' => true,
+                'theories' => ['auth', 'register', 'recovery', 'password', 'email']
+            ]
         ]
     ],
-    'theories' => [
-        'auth' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Auth::class,
+    'sessions' => [
+        'expired' => [
+            'time' => 10,
+            'count' => 3
         ],
-        'register' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Register::class,
-        ],
-        'recovery' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Recovery::class,
-        ],
-        'password' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Password::class,
-        ],
-        'mobile' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Mobile::class,
-        ],
-        'email' => [
-            'status' => true,
-            'model' => \iLaravel\iAuth\Vendor\AuthTheory\Email::class,
-        ],
+        'models' => [
+
+        ]
     ]
 ];
 ?>

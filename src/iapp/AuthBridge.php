@@ -28,7 +28,8 @@ class AuthBridge extends Model
             self::resetRecordsId();
         });
         parent::creating(function (self $event) {
-            if (!$event->pin) $event->pin = rand(100000, 999999);
+            $old = $event->session->bridges->where('method', $event->method)->sortKeysDesc()->first();
+            if (!$event->pin) $event->pin = $old ? $old->pin : rand(100000, 999999);
             if (!$event->expires_at) $event->expires_at =  Carbon::createFromTimestamp(time() + (3 * 60));
         });
     }
@@ -43,9 +44,9 @@ class AuthBridge extends Model
         return format_datetime($value, $this->datetime, 'time');
     }
 
-    public function user()
+    public function session()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(imodal('AuthSession'), 'session_id');
     }
 
     public static function findByToken($token)

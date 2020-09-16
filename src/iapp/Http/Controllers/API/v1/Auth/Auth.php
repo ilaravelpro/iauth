@@ -6,6 +6,7 @@ namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\Auth;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use iLaravel\iAuth\Vendor\AuthBridge;
+use iLaravel\iAuth\Vendor\Methods\Session as SessionMethod;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -23,12 +24,8 @@ trait Auth
             $user = $this->register($request);
         }
         if (iauth('methods.verify.ever') && (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true)) {
-            list($methods, $theory) = AuthBridge::render($request, $this->username_method, $user);
-            $show = new UserSummary($user, $this->username_method);
-            $this->statusMessage = __('The verification code was sent to your :methods',["methods" => implode(" & ", $methods)]);
-            $show->additional([
-                'additional' => ['verify_token' => $theory->token]
-            ]);
+            list($show, $message) = SessionMethod::pass($request, $this->username_method,UserSummary::class, $user);
+            $this->statusMessage = $message;
             return $show;
         } elseif (auth()->attempt($this->attempt_rule($request))) {
             return $this->authorizing($request);

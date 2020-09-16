@@ -4,7 +4,7 @@ namespace iLaravel\iAuth\iApp\Http\Resources;
 
 use iLaravel\Core\iApp\Http\Resources\Resource;
 
-class AuthTheory extends Resource
+class AuthSession extends Resource
 {
     public function toArray($request)
     {
