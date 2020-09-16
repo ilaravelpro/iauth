@@ -22,9 +22,6 @@ trait Register
             $register->status = 'active';
         $register->role = 'user';
         $register->save();
-        if (!iauth('modes.verify.status'))
-            return $this->authorizing($request);
-        $this->statusMessage = 'Authorizing successfully.';
-        return $this->show($request, $this->findOrFail($register->serial ?: $register->id));
+        return $this->findOrFail($register->serial ?: $register->id);
     }
 }

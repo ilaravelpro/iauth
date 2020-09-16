@@ -14,14 +14,18 @@ return [
     'methods' => [
         'auth' => [
             'status' => true,
+            'register' => true,
             'password' => [
                 'status' => true,
                 'after' => false
             ]
         ],
+        'register' => [
+            'status' => true,
+        ],
         'verify' => [
             'status' => true,
-            'mode' => 'all',
+            'mode' => 'smart',
             'ever' => true,
             'other' => 'email'
         ],

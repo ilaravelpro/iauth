@@ -83,6 +83,6 @@ class AuthTheory extends Model
     }
 
     public function bridges(){
-        $this->hasMany(imodal('AuthBridge'), 'theory_id');
+        return $this->hasMany(imodal('AuthBridge'), 'theory_id');
     }
 }

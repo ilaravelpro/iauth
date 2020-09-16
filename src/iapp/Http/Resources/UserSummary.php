@@ -21,7 +21,7 @@ class UserSummary extends JsonResource
         $data = [];
         $data['id'] = $this->serial;
         $data['name'] = $this->name;
-        $data[$this->_username_method] = $this->{$this->_username_method};
+        if ($this->_username_method !== 'id') $data[$this->_username_method] = $this->{$this->_username_method};
         //$data['avatar'] = $this->avatar ? new Files($this->avatar) : null;
         return $data;
     }

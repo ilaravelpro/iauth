@@ -18,8 +18,9 @@ trait Auth
             throw new AuthenticationException('Authorization disabled');
         }
         $this->username_method($request);
-        if (!in_array($this->username_method, ['username', 'id']) && !($user = $this->model::where($this->username_method, $request->input($this->username_method))->first()) && iauth('methods.register.status')) {
-            return $this->register($request);
+        $user = $this->model::where($this->username_method, $request->input($this->username_method))->first();
+        if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.status')) {
+            $user = $this->register($request);
         }
         if (iauth('methods.verify.ever') && (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true)) {
             list($methods, $theory) = AuthBridge::render($request, $this->username_method, $user);
