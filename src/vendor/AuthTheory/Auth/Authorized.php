@@ -11,15 +11,23 @@ trait Authorized
     {
         $resource = iresource('User');
         $result = new $resource($model);
-        if (iauth('methods.verify.auto') || $result->status != 'active')
-            $model->status = 'active';
-        if ($result->status != 'active')
-            throw new AuthenticationException('User is not active.');
-        $token = $result->createToken('iauth')->accessToken;
-        $result->additional(array_merge_recursive($result->additional, [
-            'additional' => ['token' => $token]
-        ]));
-        $this->statusMessage = 'Authorization successfully.';
-        return [$result, $token, 'Authorization successfully.'];
+        if ($result->status != 'active') {
+            if (iauth('methods.verify.auto'))
+                $model->status = 'active';
+            else
+                $model->status = 'verified';
+            $model->save();
+        }
+        if (in_array($result->status, ['active', 'verified'])){
+            if ($result->status == 'active') {
+                $token = $result->createToken('iauth')->accessToken;
+                $result->additional(array_merge_recursive($result->additional, [
+                    'additional' => ['token' => $token]
+                ]));
+                return [$result, $token, 'Authorization successfully.'];
+            }
+            return [$result, null, 'Registration successfully, please wait verification by admin.'];
+        }
+        throw new AuthenticationException('User is not active.');
     }
 }

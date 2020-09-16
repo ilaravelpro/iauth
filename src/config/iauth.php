@@ -25,7 +25,7 @@ return [
         ],
         'verify' => [
             'status' => true,
-            'auto' => true,
+            'auto' => false,
             'mode' => 'smart',
             'ever' => false,
             'other' => 'email',

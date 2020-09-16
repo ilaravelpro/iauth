@@ -32,9 +32,11 @@ class Auth extends Session
                 if (iauth('methods.verify.ever') || $session->item()->status === 'waiting')
                     return [$result, null];
                 list($result, $token, $message) = $this->authorized($result->resource);
-                $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
-                $session->meta = ['passport' => $tokenId];
-                $session->save();
+                if ($result->status == 'active'){
+                    $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
+                    $session->meta = ['passport' => $tokenId];
+                    $session->save();
+                }
                 return [$result, $message];
             });
             return [$result, $message];
@@ -50,11 +52,13 @@ class Auth extends Session
 
     public function verify(Request $request, $session, $token, $pin)
     {
-        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $authSession, $bridge) {
-            list($result, $token, $message) = $this->authorized($authSession->item());
-            $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
-            $authSession->meta = ['passport' => $tokenId];
-            $authSession->save();
+        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) {
+            list($result, $token, $message) = $this->authorized($session->item());
+            if ($result->status == 'active'){
+                $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
+                $session->meta = ['passport' => $tokenId];
+                $session->save();
+            }
             return [$result, $message];
         });
     }

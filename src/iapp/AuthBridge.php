@@ -28,8 +28,7 @@ class AuthBridge extends Model
             self::resetRecordsId();
         });
         parent::creating(function (self $event) {
-            $old = $event->session->bridges->where('method', $event->method)->sortKeysDesc()->first();
-            if (!$event->pin) $event->pin = $old ? $old->pin : rand(100000, 999999);
+            if (!$event->pin) $event->pin = rand(100000, 999999);
             if (!$event->expires_at) $event->expires_at =  Carbon::createFromTimestamp(time() + (3 * 60));
         });
     }
@@ -47,52 +46,5 @@ class AuthBridge extends Model
     public function session()
     {
         return $this->belongsTo(imodal('AuthSession'), 'session_id');
-    }
-
-    public static function findByToken($token)
-    {
-        return static::where([
-            'token' => $token,
-            ['expires_at', '>', Carbon::createFromTimestamp(time())]
-        ])
-            ->whereNull('verified_at')
-            ->first();
-    }
-
-    public static function findByTypeBridgePin($type, $bridge, $pin)
-    {
-        return static::where([
-            'type' => $type,
-            'bridge' => $bridge,
-            'pin' => $pin,
-            ['expires_at', '>', Carbon::createFromTimestamp(time())]
-        ])
-            ->whereNull('verified_at')
-            ->first();
-    }
-
-    public function verify()
-    {
-        if ($this->type == 'reset_password') {
-            $this->delete();
-            return;
-        }
-        $now = Carbon::now();
-        if ($this->type == 'mobile' && $this->user->status == 'awaiting') {
-            $this->user->mobile = $this->bridge;
-            $this->user->status = 'active';
-            $this->user->update();
-        }
-        if ($this->type == 'email' && $this->user->status == 'awaiting') {
-            $this->user->status = 'active';
-            $this->user->email = $this->bridge;
-            $this->user->email_verified_at = $now;
-            $this->user->update();
-        }
-        $this->expires_at = null;
-        $this->token = null;
-        $this->pin = null;
-        $this->verified_at = $now;
-        $this->save();
     }
 }

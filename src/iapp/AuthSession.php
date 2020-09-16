@@ -3,7 +3,6 @@
 namespace iLaravel\iAuth\iApp;
 
 use Carbon\Carbon;
-use iLaravel\Core\iApp\User;
 use Illuminate\Database\Eloquent\Model;
 
 class AuthSession extends Model
