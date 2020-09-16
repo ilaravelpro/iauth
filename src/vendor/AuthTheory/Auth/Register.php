@@ -17,10 +17,8 @@ trait Register
         $register = new $this->model;
         $register->password = Hash::make($request->input('password'));
         $register->{$this->username_method} = $request->input($this->username_method);
-        if (!iauth('modes.verify.status'))
-            $register->status = 'active';
         $register->role = 'user';
         $register->save();
-        return $this->findOrFail($register->serial ?: $register->id);
+        return $register;
     }
 }

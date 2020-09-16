@@ -3,22 +3,23 @@
 
 namespace iLaravel\iAuth\Vendor\AuthTheory\Auth;
 
-use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Illuminate\Auth\AuthenticationException;
 
 trait Authorized
 {
-    public function authorized(Request $request, $session)
+    public function authorized($model)
     {
         $resource = iresource('User');
-        $user = new $resource(auth()->user());
-        if ($user->status != 'active')
-            throw new AuthenticationException('not active');
-        $token = $user->createToken('iauth')->accessToken;
-        $user->additional(array_merge_recursive($user->additional, [
+        $result = new $resource($model);
+        if (iauth('methods.verify.auto') || $result->status != 'active')
+            $model->status = 'active';
+        if ($result->status != 'active')
+            throw new AuthenticationException('User is not active.');
+        $token = $result->createToken('iauth')->accessToken;
+        $result->additional(array_merge_recursive($result->additional, [
             'additional' => ['token' => $token]
         ]));
         $this->statusMessage = 'Authorization successfully.';
-        return $user;
+        return [$result, $token, 'Authorization successfully.'];
     }
 }

@@ -21,7 +21,6 @@ class AuthSessionController extends Controller
 
     use AuthSession\Store,
         Auth\Register,
-        Auth\Revoke,
         Auth\Me,
         Auth\MeUpdate,
         Auth\AttemptRule,

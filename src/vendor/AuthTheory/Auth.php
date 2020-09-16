@@ -6,6 +6,7 @@ use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Token;
 
 class Auth extends Session
 {
@@ -20,22 +21,62 @@ class Auth extends Session
 
     public function store(Request $request)
     {
-        if (!iauth('methods.auth.status')) {
+        if (!iauth('methods.auth.status'))
             throw new AuthenticationException('Authorization disabled');
-        }
         $this->username_method($request);
         $user = $this->model::where($this->username_method, $request->input($this->username_method))->first();
-        if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.status')) {
+        if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.status'))
             $user = $this->register($request);
-        }
-        if (iauth('methods.verify.ever') && (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true)) {
-            list($show, $message) = $this->vendor::pass($request, $this->username_method, UserSummary::class, $user);
-            $this->statusMessage = $message;
-            return $show;
-        } elseif (auth()->attempt($this->attempt_rule($request))) {
-            return $this->authorized($request);
+        if (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true) {
+            list($result, $message, $session) = $this->vendor::pass($request, $this->username_method, UserSummary::class, $user, 'auth', function ($request, $result, $session, $methods) {
+                if (iauth('methods.verify.ever') || $session->item()->status === 'waiting')
+                    return [$result, null];
+                list($result, $token, $message) = $this->authorized($result->resource);
+                $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
+                $session->meta = ['passport' => $tokenId];
+                $session->save();
+                return [$result, $message];
+            });
+            return [$result, $message];
         } else {
             throw new AuthenticationException('Authorization data is not match');
         }
+    }
+
+    public function resend(Request $request, $session, $token)
+    {
+        return $this->vendor::tryPass($request, $session, $token, UserSummary::class);
+    }
+
+    public function verify(Request $request, $session, $token, $pin)
+    {
+        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $authSession, $bridge) {
+            list($result, $token, $message) = $this->authorized($authSession->item());
+            $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
+            $authSession->meta = ['passport' => $tokenId];
+            $authSession->save();
+            return [$result, $message];
+        });
+    }
+
+    public function revoke(Request $request, $session, $token = null)
+    {
+        $bearerToken = $request->bearerToken();
+        $authSession = $this->sessionModel::where('session', $session);
+        if ($token) {
+            $authSession = $authSession->where('token', $token);
+        } else {
+            $tokenId = (new \Lcobucci\JWT\Parser())->parse($bearerToken)->getHeader('jti');
+            $authSession = $authSession->where('meta->passport', $tokenId);
+        }
+        $authSession = $authSession->where('revoked', 0)->first();
+        if (!$authSession)
+            throw new AuthenticationException('Session was not found or has revoke, please create a session.');
+        $authSession->update(['revoked' => 1]);
+        $user = iresource('User');
+        $user = new $user($authSession->item());
+        if ($access = Token::where('id', $authSession->meta['passport'])->first())
+            $access->update(['revoked' => 1]);
+        return [$user, 'The session was successfully revoked.'];
     }
 }

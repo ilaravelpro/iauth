@@ -11,16 +11,35 @@ trait Store
     {
         if (!($model = iauth("sessions.models.{$session}.model")))
             throw new AuthenticationException('Not found your session model.');
-        return (new $model())->store($request);
+        list($result, $message) = (new $model())->store($request);
+        $this->statusMessage = $message;
+        return $result;
     }
 
-    public function verify(Request $request, $session, $token)
+    public function verify(Request $request, $session, $token, $pin)
     {
-
+        if (!($model = iauth("sessions.models.{$session}.model")))
+            throw new AuthenticationException('Not found your session model.');
+        list($result, $message) = (new $model())->verify($request, $session, $token, $pin);
+        $this->statusMessage = $message;
+        return $result;
     }
 
     public function resend(Request $request, $session, $token)
     {
+        if (!($model = iauth("sessions.models.{$session}.model")))
+            throw new AuthenticationException('Not found your session model.');
+        list($result, $message) = (new $model())->resend($request, $session, $token);
+        $this->statusMessage = $message;
+        return $result;
+    }
 
+    public function revoke(Request $request, $session, $token = null)
+    {
+        if (!($model = iauth("sessions.models.{$session}.model")))
+            throw new AuthenticationException('Not found your session model.');
+        list($result, $message) = (new $model())->revoke($request, $session, $token);
+        $this->statusMessage = $message;
+        return $result;
     }
 }

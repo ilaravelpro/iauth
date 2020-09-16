@@ -25,9 +25,10 @@ return [
         ],
         'verify' => [
             'status' => true,
+            'auto' => true,
             'mode' => 'smart',
-            'ever' => true,
-            'other' => 'email'
+            'ever' => false,
+            'other' => 'email',
         ],
         'recovery' => [
             'status' => true,
@@ -46,11 +47,15 @@ return [
         'models' => [
             'mobile' => [
                 'status' => true,
-                'theories' => ['auth', 'register', 'recovery', 'password', 'mobile']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'mobile']
             ],
             'email' => [
                 'status' => true,
-                'theories' => ['auth', 'register', 'recovery', 'password', 'email']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'email']
+            ],
+            'password' => [
+                'status' => true,
+                'sessions' => ['auth']
             ]
         ]
     ],

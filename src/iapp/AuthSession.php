@@ -31,7 +31,7 @@ class AuthSession extends Model
         });
         parent::creating(function (self $event) {
             if (!$event->token) $event->token = self::generateToken($event->session);
-            if (!isset($event->attributes->expired_at)) $event->attributes['expired_at'] = Carbon::now()->addMinutes(iauth('theories.expired.time'));
+            if (!isset($event->attributes->expired_at)) $event->attributes['expired_at'] = Carbon::now()->addMinutes(iauth('sessions.expired.time'));
         });
     }
 
@@ -53,7 +53,7 @@ class AuthSession extends Model
 
     public static function findByToken($session, $token)
     {
-        return static::where('session', $session)->where('token', $token)->where('expired_at', '>', Carbon::now())->first();
+        return static::where('session', $session)->where('token', $token)->where('verified', 0)->where('revoked', 0)->where('expired_at', '>', Carbon::now())->first();
     }
 
     public function bridges(){
