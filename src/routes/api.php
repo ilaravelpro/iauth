@@ -16,7 +16,14 @@ Route::namespace('v1')->prefix('v1')->group(function() {
             Route::get('/{session}/{token}/{pin}', 'AuthSessionController@verify')->name('api.iauth.session.verify');
             Route::get('/{session}/{token}', 'AuthSessionController@resend')->name('api.iauth.session.resend');
             Route::get('/agent', function () {
-                dd(request()->userAgent());
+                $client = new \Memcached();
+                $client->addServer('localhost', 11211);
+
+                $pool = new \Cache\Adapter\Memcached\MemcachedCachePool($client);
+
+                $result = new WhichBrowser\Parser();
+                $result->setCache($pool);
+                $result->analyse(getallheaders());
             });
         });
     });
