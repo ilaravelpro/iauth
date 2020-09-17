@@ -16,14 +16,15 @@ Route::namespace('v1')->prefix('v1')->group(function() {
             Route::get('/{session}/{token}/{pin}', 'AuthSessionController@verify')->name('api.iauth.session.verify');
             Route::get('/{session}/{token}', 'AuthSessionController@resend')->name('api.iauth.session.resend');
             Route::get('/agent', function () {
-                $client = new \Memcached();
-                $client->addServer('localhost', 11211);
-
-                $pool = new \Cache\Adapter\Memcached\MemcachedCachePool($client);
-
-                $result = new WhichBrowser\Parser();
-                $result->setCache($pool);
-                $result->analyse(getallheaders());
+                $ua = "Mozilla/5.0 (Linux; Android 6.0.1; ASUS_Z00LD) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.101 Mobile Safari/537.36";
+                //$ua = "Mozilla/5.0 (X11; CrOS x86_64 11895.118.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.159 Safari/537.36";
+                $parser = \UAParser\Parser::create();
+                $result = $parser->parse(request()->userAgent());
+                return [
+                    'browser' => $result->ua,
+                    'os' => $result->os,
+                    'device' => $result->device,
+                ];
             });
         });
     });
