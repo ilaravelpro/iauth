@@ -1,5 +1,12 @@
 <?php
 
+
+/**
+ * Author: Amir Hossein Jahani | iAmir.net
+ * Last modified: 9/16/20, 7:29 PM
+ * Copyright (c) 2020. Powered by iamir.net
+ */
+
 namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\AuthSession;
 
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;

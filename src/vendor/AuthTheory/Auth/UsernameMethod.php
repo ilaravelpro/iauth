@@ -1,6 +1,13 @@
 <?php
 
 
+
+/**
+ * Author: Amir Hossein Jahani | iAmir.net
+ * Last modified: 9/16/20, 12:41 PM
+ * Copyright (c) 2020. Powered by iamir.net
+ */
+
 namespace iLaravel\iAuth\Vendor\AuthTheory\Auth;
 
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;

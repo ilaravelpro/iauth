@@ -1,6 +1,13 @@
 <?php
 
 
+
+/**
+ * Author: Amir Hossein Jahani | iAmir.net
+ * Last modified: 9/16/20, 9:31 AM
+ * Copyright (c) 2020. Powered by iamir.net
+ */
+
 namespace iLaravel\iAuth\Vendor;
 use Carbon\Carbon;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;

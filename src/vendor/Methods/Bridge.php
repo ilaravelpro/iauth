@@ -1,5 +1,12 @@
 <?php
 
+
+/**
+ * Author: Amir Hossein Jahani | iAmir.net
+ * Last modified: 9/16/20, 5:54 PM
+ * Copyright (c) 2020. Powered by iamir.net
+ */
+
 namespace iLaravel\iAuth\Vendor\Methods;
 
 class Bridge
