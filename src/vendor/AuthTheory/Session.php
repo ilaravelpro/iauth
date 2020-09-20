@@ -16,6 +16,6 @@ abstract class Session
     public function __construct()
     {
         $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
-        $this->sessionModel = imodal('AuthSession');
+        $this->sessionModel = imodal('IAuthSession');
     }
 }

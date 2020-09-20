@@ -20,7 +20,7 @@ class Session
 
     public function __construct()
     {
-        $this->sessionModel = imodal('AuthSession');
+        $this->sessionModel = imodal('IAuthSession');
     }
 
     public static function pass(Request $request, $method, $resource, $model, $session, $callback = null)

@@ -12,7 +12,7 @@ namespace iLaravel\iAuth\iApp;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
-class AuthSession extends Model
+class IAuthSession extends Model
 {
     use \iLaravel\Core\iApp\Modals\Modal;
 
@@ -63,15 +63,15 @@ class AuthSession extends Model
     }
 
     public function bridges(){
-        return $this->hasMany(imodal('AuthBridge'), 'session_id');
+        return $this->hasMany(imodal('IAuthBridge'), 'session_id');
     }
 
     public function bridgesByMobile(){
-        return $this->hasMany(imodal('AuthBridge'), 'session_id')->where('method' , 'mobile');
+        return $this->hasMany(imodal('IAuthBridge'), 'session_id')->where('method' , 'mobile');
     }
 
     public function bridgesByEmail(){
-        return $this->hasMany(imodal('AuthBridge'), 'session_id')->where('method' , 'email');
+        return $this->hasMany(imodal('IAuthBridge'), 'session_id')->where('method' , 'email');
     }
 
     public function item() {

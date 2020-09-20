@@ -11,7 +11,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAuthSessionsTable extends Migration
+class CreateIAuthSessionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -20,7 +20,7 @@ class CreateAuthSessionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('auth_sessions', function (Blueprint $table) {
+        Schema::create('i_auth_sessions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('model')->nullable();
             $table->bigInteger('model_id')->nullable();
@@ -43,6 +43,6 @@ class CreateAuthSessionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('auth_sessions');
+        Schema::dropIfExists('i_auth_sessions');
     }
 }

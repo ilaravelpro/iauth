@@ -13,7 +13,7 @@ use Carbon\Carbon;
 use iLaravel\Core\iApp\User;
 use Illuminate\Database\Eloquent\Model;
 
-class AuthBridge extends Model
+class IAuthBridge extends Model
 {
     use \iLaravel\Core\iApp\Modals\Modal;
 
@@ -52,6 +52,6 @@ class AuthBridge extends Model
 
     public function session()
     {
-        return $this->belongsTo(imodal('AuthSession'), 'session_id');
+        return $this->belongsTo(imodal('IAuthSession'), 'session_id');
     }
 }
