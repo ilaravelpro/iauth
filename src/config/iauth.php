@@ -24,7 +24,7 @@ return [
             'register' => true,
             'password' => [
                 'status' => true,
-                'after' => false
+                'after' => true
             ]
         ],
         'register' => [

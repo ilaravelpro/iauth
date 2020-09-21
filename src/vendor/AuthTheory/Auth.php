@@ -17,15 +17,14 @@ use Laravel\Passport\Token;
 
 class Auth extends Session
 {
-    use Auth\Register, Auth\UsernameMethod, Auth\Authorized, Auth\AttemptRule;
+    use Auth\Register, Auth\UsernameMethod, Auth\FindUser, Auth\Authorized, Auth\AttemptRule;
     public $method = 'auth';
 
     public function store(Request $request, $user = null)
     {
         if (!iauth('methods.auth.status'))
             throw new AuthenticationException('Authorization disabled');
-        $this->username_method($request);
-        $user = $this->model::where($this->username_method, $request->input($this->username_method))->first();
+        $user = $this->findUser($request);
         if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.status'))
             $user = $this->register($request);
         if (iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? Hash::check($request->input('password'), $user->password) : true) {
@@ -40,6 +39,10 @@ class Auth extends Session
                 $session->save();
                 return [$result, $message];
             });
+            if (iauth('methods.auth.password.status'))
+                $result->additional(array_merge_recursive($result->additional, [
+                    'additional' => ['password_after' => iauth('methods.auth.password.after')]
+                ]));
             return [$result, $message];
         } else {
             throw new AuthenticationException('Authorization data is not match');
@@ -48,6 +51,9 @@ class Auth extends Session
 
     public function verify(Request $request, $session, $token, $pin)
     {
+        if (iauth('methods.auth.password.status') && iauth('methods.auth.password.after') && !Hash::check($request->input('password'), $this->sessionModel::findByToken($session, $token)->item()->password)) {
+            throw new AuthenticationException('Authorization data is not match');
+        }
         return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) {
             list($result, $token, $message) = $this->authorized($session->item());
             if ($result->status == 'active') {
@@ -76,5 +82,22 @@ class Auth extends Session
         if ($access = Token::where('id', $authSession->meta['passport'])->first())
             $access->update(['revoked' => 1]);
         return [$user, 'The session was successfully revoked.'];
+    }
+
+    public function rules(Request $request, $action)
+    {
+        switch ($action) {
+            case 'store':
+                return [
+                    'username' => 'required',
+                    'password' => iauth('methods.auth.password.status') && !iauth('methods.auth.password.after') ? 'required|min:6' : 'nullable',
+                ];
+                break;
+            case 'verify':
+                return [
+                    'password' => iauth('methods.auth.password.status') && iauth('methods.auth.password.after') ? 'required|min:6' : 'nullable',
+                ];
+                break;
+        }
     }
 }
