@@ -51,14 +51,18 @@ return [
         ],
     ],
     'bridges' => [
+        'expired' => [
+            'time' => 3,
+            'count' => 3
+        ],
         'models' => [
             'mobile' => [
                 'status' => true,
-                'sessions' => ['auth', 'register', 'recovery', 'password', 'mobile']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'mobile', 'mobile_change']
             ],
             'email' => [
                 'status' => true,
-                'sessions' => ['auth', 'register', 'recovery', 'password', 'email']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'email', 'email_change']
             ],
             'password' => [
                 'status' => true,
@@ -68,15 +72,27 @@ return [
     ],
     'sessions' => [
         'expired' => [
-            'time' => 10,
+            'time' => 60,
             'count' => 3
         ],
         'models' => [
             'auth' => [
-                'model' => \iLaravel\iAuth\Vendor\AuthTheory\Auth::class
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Auth::class
             ],
             'recovery' => [
-                'model' => \iLaravel\iAuth\Vendor\AuthTheory\Recovery::class
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Recovery::class
+            ],
+            'email' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Email::class
+            ],
+            'email_change' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\EmailChange::class
+            ],
+            'mobile' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Mobile::class
+            ],
+            'mobile_change' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\MobileChange::class
             ]
         ]
     ]

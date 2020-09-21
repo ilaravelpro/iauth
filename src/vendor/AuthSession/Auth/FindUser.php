@@ -7,7 +7,7 @@
  * Copyright (c) 2020. Powered by iamir.net
  */
 
-namespace iLaravel\iAuth\Vendor\AuthTheory\Auth;
+namespace iLaravel\iAuth\Vendor\AuthSession\Auth;
 
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 

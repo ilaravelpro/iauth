@@ -7,7 +7,7 @@
  * Copyright (c) 2020. Powered by iamir.net
  */
 
-namespace iLaravel\iAuth\Vendor\AuthTheory;
+namespace iLaravel\iAuth\Vendor\AuthSession;
 
 
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
@@ -17,9 +17,12 @@ use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 class Session
 {
     public $vendor, $method, $resource, $model, $sessionModel, $sessionResource, $emailModel, $phoneModel, $username_method;
+    public $authCheck = false;
 
     public function __construct()
     {
+        if ($this->authCheck && !auth()->check())
+            throw new AuthenticationException('Please log in.');
         $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
         $this->sessionModel = imodal('IAuthSession');
         $this->sessionResource = iresource('IAuthSession') ?: iresource('Resource');

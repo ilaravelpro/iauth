@@ -8,7 +8,7 @@
  * Copyright (c) 2020. Powered by iamir.net
  */
 
-namespace iLaravel\iAuth\Vendor\AuthTheory\Auth;
+namespace iLaravel\iAuth\Vendor\AuthSession\Auth;
 
 use Illuminate\Auth\AuthenticationException;
 

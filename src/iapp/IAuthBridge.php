@@ -36,7 +36,7 @@ class IAuthBridge extends Model
         });
         parent::creating(function (self $event) {
             if (!$event->pin) $event->pin = rand(100000, 999999);
-            if (!$event->expires_at) $event->expires_at =  Carbon::createFromTimestamp(time() + (3 * 60));
+            if (!$event->expires_at) $event->expires_at =  Carbon::createFromTimestamp(iauth('bridges.expired.time') * 60);
         });
     }
 

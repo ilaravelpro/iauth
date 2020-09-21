@@ -102,8 +102,8 @@ class Session
         if (!count($this->bridges))
             throw new AuthenticationException('Not found Verify Method.');
         $this->session->save();
-        if ($this->session->bridgesByMobile()->count() > iauth('sessions.expired.count') || $this->session->bridgesByEmail()->count() > iauth('sessions.expired.count'))
-            throw new AuthenticationException(__('The confirmation code has been sent to you. Please try again in :minutes minutes.', ['minutes' => iauth('sessions.expired.time')]));
+        if ($this->session->bridgesByMobile()->count() > iauth('bridges.expired.count') || $this->session->bridgesByEmail()->count() > iauth('bridges.expired.count'))
+            throw new AuthenticationException(__('The confirmation code has been sent to you. Please try again in :minutes minutes.', ['minutes' => iauth('bridges.expired.time')]));
         if (iauth('methods.verify.ever') || $this->session->item()->status === 'waiting') {
             if (in_array('mobile', $this->bridges)) {
                 $this->session->bridgesByMobile()->create(['method' => 'mobile']);

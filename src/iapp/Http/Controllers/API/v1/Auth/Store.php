@@ -1,18 +1,19 @@
 <?php
 /**
  * Author: Amir Hossein Jahani | iAmir.net
- * Last modified: 9/21/20, 5:57 PM
+ * Last modified: 9/21/20, 5:52 PM
  * Copyright (c) 2020. Powered by iamir.net
  */
 
 namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1\Auth;
+
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 
-trait Revoke
+trait Store
 {
-    public function revoke(Request $request, $session, $token = null)
+    public function store(Request $request, $session)
     {
-        list($result, $this->statusMessage) = $this->vendor->revoke($request, $session, $token);
+        list($result, $this->statusMessage) = $this->vendor->store($request);
         return $result;
     }
 }
