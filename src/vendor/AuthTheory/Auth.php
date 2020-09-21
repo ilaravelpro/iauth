@@ -18,13 +18,7 @@ use Laravel\Passport\Token;
 class Auth extends Session
 {
     use Auth\Register, Auth\UsernameMethod, Auth\Authorized, Auth\AttemptRule;
-    protected $username_method, $model;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->model = imodal('User');
-    }
+    protected $username_method;
 
     public function store(Request $request)
     {
@@ -42,8 +36,9 @@ class Auth extends Session
                 if ($result->status == 'active'){
                     $tokenId = (new \Lcobucci\JWT\Parser())->parse($token)->getHeader('jti');
                     $session->meta = ['passport' => $tokenId];
-                    $session->save();
                 }
+                $session->verified = true;
+                $session->save();
                 return [$result, $message];
             });
             return [$result, $message];

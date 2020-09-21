@@ -34,7 +34,7 @@ return [
             'status' => true,
             'auto' => false,
             'mode' => 'smart',
-            'ever' => false,
+            'ever' => true,
             'other' => 'email',
         ],
         'recovery' => [
@@ -74,6 +74,9 @@ return [
         'models' => [
             'auth' => [
                 'model' => \iLaravel\iAuth\Vendor\AuthTheory\Auth::class
+            ],
+            'recovery' => [
+                'model' => \iLaravel\iAuth\Vendor\AuthTheory\Recovery::class
             ]
         ]
     ]

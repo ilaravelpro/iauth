@@ -12,10 +12,13 @@ namespace iLaravel\iAuth\Vendor\AuthTheory;
 
 abstract class Session
 {
-    public $vendor, $resource, $sessionModel;
+    public $vendor, $resource, $model, $sessionModel, $emailModel, $phoneModel;
     public function __construct()
     {
         $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
         $this->sessionModel = imodal('IAuthSession');
+        $this->emailModel = imodal('Email');
+        $this->phoneModel = imodal('Phone');
+        $this->model = imodal('User');
     }
 }
