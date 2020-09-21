@@ -9,6 +9,7 @@
 
 namespace iLaravel\iAuth\iApp\Http\Resources;
 
+use iLaravel\Core\iApp\Http\Resources\Resource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 
@@ -28,7 +29,14 @@ class UserSummary extends JsonResource
         $data = [];
         $data['id'] = $this->serial;
         $data['name'] = $this->name;
-        if ($this->_username_method !== 'id') $data[$this->_username_method] = $this->{$this->_username_method};
+        if ($this->_username_method !== 'id') {
+            $method = $this->{$this->_username_method};
+            if (in_array($this->_username_method, ['email', 'mobile'])) {
+                $data[$this->_username_method] = new Resource($method);
+                $data["{$this->_username_method}_text"] = $method->text;
+            }else
+                $data[$this->_username_method] = $method;
+        }
         //$data['avatar'] = $this->avatar ? new Files($this->avatar) : null;
         return $data;
     }

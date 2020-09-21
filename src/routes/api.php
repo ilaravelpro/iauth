@@ -20,7 +20,7 @@ Route::namespace('v1')->prefix('v1')->group(function() {
                 Route::delete('/{session}/{token?}', 'AuthSessionController@revoke')->name('api.iauth.session.revoke');
             });
             Route::post('/{session}', 'AuthSessionController@store')->name('api.iauth.session.store');
-            Route::get('/{session}/{token}/{pin}', 'AuthSessionController@verify')->name('api.iauth.session.verify');
+            Route::post('/{session}/{token}/{pin}', 'AuthSessionController@verify')->name('api.iauth.session.verify');
             Route::get('/{session}/{token}', 'AuthSessionController@resend')->name('api.iauth.session.resend');
             Route::get('/agent', function () {
                 $ua = "Mozilla/5.0 (Linux; Android 6.0.1; ASUS_Z00LD) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.101 Mobile Safari/537.36";

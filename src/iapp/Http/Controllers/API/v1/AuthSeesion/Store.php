@@ -16,37 +16,30 @@ trait Store
 {
     public function store(Request $request, $session)
     {
-        if (!($model = iauth("sessions.models.{$session}.model")))
-            throw new AuthenticationException('Not found your session model.');
-        list($result, $message) = (new $model())->store($request);
-        $this->statusMessage = $message;
+        list($result, $this->statusMessage) = $this->vendor->store($request);
         return $result;
     }
 
     public function verify(Request $request, $session, $token, $pin)
     {
-        if (!($model = iauth("sessions.models.{$session}.model")))
-            throw new AuthenticationException('Not found your session model.');
-        list($result, $message) = (new $model())->verify($request, $session, $token, $pin);
-        $this->statusMessage = $message;
+        list($result, $this->statusMessage) = $this->vendor->verify($request, $session, $token, $pin);
         return $result;
     }
 
     public function resend(Request $request, $session, $token)
     {
-        if (!($model = iauth("sessions.models.{$session}.model")))
-            throw new AuthenticationException('Not found your session model.');
-        list($result, $message) = (new $model())->resend($request, $session, $token);
-        $this->statusMessage = $message;
+        list($result, $this->statusMessage) = $this->vendor->resend($request, $session, $token);
         return $result;
     }
 
     public function revoke(Request $request, $session, $token = null)
     {
-        if (!($model = iauth("sessions.models.{$session}.model")))
-            throw new AuthenticationException('Not found your session model.');
-        list($result, $message) = (new $model())->revoke($request, $session, $token);
-        $this->statusMessage = $message;
+        list($result, $this->statusMessage) = $this->vendor->revoke($request, $session, $token);
         return $result;
+    }
+
+    public function rules(Request $request, $action)
+    {
+        return $this->vendor->rules($request, $action);
     }
 }
