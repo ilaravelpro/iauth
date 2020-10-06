@@ -19,6 +19,7 @@ class Telegram
     }
 
     public function sendMSG($messgae) {
+        dd($messgae);
         return $this->_send('sendMessage', [
             'chat_id' => $this->chatId,
             'text' => $messgae,
