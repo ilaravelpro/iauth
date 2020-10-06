@@ -11,6 +11,7 @@ namespace iLaravel\iAuth\Vendor\Methods;
 
 use Carbon\Carbon;
 use iLaravel\iAuth\Vendor\AuthBridges\Mobile;
+use iLaravel\iAuth\Vendor\AuthBridges\Telegram;
 use Illuminate\Auth\AuthenticationException;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Exception;
@@ -109,6 +110,7 @@ class Session
             if (in_array('mobile', $this->bridges)) {
                 $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
                 //Mobile::send($this->model->name,$this->session->value, $bridge->code);
+                Telegram::send($this->model->name,$this->session->value, $bridge->code);
                 $methods[] = 'mobile';
             }
             if (in_array('email', $this->bridges)) {
