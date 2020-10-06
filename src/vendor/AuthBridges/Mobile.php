@@ -15,7 +15,7 @@ class Mobile
 {
     public static function send($name, $mobile, $code) {
         $mobile = iMobile::parse($mobile);
-        \iLaravel\iSMS\Vendor\Service::sendByPatternFast(2,$mobile['number'],["name" => $name, "code" => $code],'ippanel');
+        \iLaravel\iSMS\Vendor\Service::sendByPatternFast(2,$mobile['number'],["name" => $name ? : '', "code" => $code],'ippanel');
         return true;
     }
 }

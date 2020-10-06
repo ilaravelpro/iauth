@@ -12,6 +12,26 @@ trait Rules
 {
     public function rules(Request $request, $action)
     {
-        return $this->vendor->rules($request, $action);
+        $rules = [];
+        switch ($action) {
+            case 'update':
+                $rules = [
+                    'avatar' => 'nullable|mimes:jpeg,jpg,png,gif|max:5120|dimensions:ratio=1',
+                    'name' => 'nullable|string',
+                    'family' => 'nullable|string',
+                    'password' => 'nullable|min:6',
+                    'website' => "nullable|max:191|regex:/^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/",
+                    'gender' => 'nullable|in:male,female',
+                ];
+                if (!$request->password) {
+                    unset($rules['password']);
+                }
+                break;
+            case 'store':
+            case 'verify':
+                $rules = $this->vendor->rules($request, $action);
+                break;
+        }
+        return $rules;
     }
 }

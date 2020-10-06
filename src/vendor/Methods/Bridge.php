@@ -26,7 +26,7 @@ class Bridge
     public static function get($model, $theory, $key = false)
     {
         $bridges = array_filter(iauth('bridges.models'), function ($bridge, $key) use ($model, $theory) {
-            return $bridge['status'] && in_array($theory, $bridge['sessions']) && ($model ? isset($model->{$key}) && $model->{$key} : true);
+            return $bridge['status'] && in_array($theory, $bridge['sessions']) && ($model ? $model->{$key} : true);
         }, 1);
         return $key ? is_string($key) ? array_column($bridges, $key) : array_keys($bridges) : $bridges;
     }
