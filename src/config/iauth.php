@@ -23,7 +23,7 @@ return [
             'status' => true,
             'register' => true,
             'password' => [
-                'status' => true,
+                'status' => false,
                 'after' => true
             ]
         ],
@@ -32,7 +32,7 @@ return [
         ],
         'verify' => [
             'status' => true,
-            'auto' => false,
+            'auto' => true,
             'mode' => 'smart',
             'ever' => true,
             'other' => 'email',

@@ -23,9 +23,11 @@ class AuthController extends Controller
         parent::__construct($request);
         $this->model = imodal('User');
         $this->resourceClass = iresource('User');
-        if (!($model = iauth("sessions.models.{$request->{'session'}}.model")))
-            throw new AuthenticationException('Not found your session model.');
-        $this->vendor = new $model();
+        if ($request->{'session'}){
+            if (!($model = iauth("sessions.models.{$request->{'session'}}.model")))
+                throw new AuthenticationException('Not found your session model.');
+            $this->vendor = new $model();
+        }
     }
     use Show;
 

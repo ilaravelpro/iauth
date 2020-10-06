@@ -18,7 +18,7 @@ trait Register
     public function register(Request $request)
     {
         $this->username_method($request);
-        $user = $this->model::where($this->username_method, $request->input($this->username_method))->first();
+        $user = $this->findUser($request);
         if ($user)
             return $this->response("user duplicated", null, 401);
         $register = new $this->model;
