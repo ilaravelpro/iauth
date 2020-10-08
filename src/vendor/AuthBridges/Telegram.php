@@ -19,7 +19,6 @@ class Telegram
     }
 
     public function sendMSG($messgae) {
-        dd($messgae);
         return $this->_send('sendMessage', [
             'chat_id' => $this->chatId,
             'text' => $messgae,
@@ -35,6 +34,7 @@ class Telegram
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $datas);
         $res = curl_exec($ch);
+        dd($res);
         if (curl_error($ch)) {
             return false;
         } else {

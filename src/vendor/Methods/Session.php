@@ -109,8 +109,8 @@ class Session
         if (iauth('methods.verify.ever') || $this->session->item()->status === 'waiting') {
             if (in_array('mobile', $this->bridges)) {
                 $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
-                //Mobile::send($this->model->name,$this->session->value, $bridge->code);
-                Telegram::send($this->model->name,$this->session->value, $bridge->code);
+                //Mobile::send($this->model->name,$this->session->value, $bridge->pin);
+                Telegram::send($this->model->name,$this->session->value, $bridge->pin);
                 $methods[] = 'mobile';
             }
             if (in_array('email', $this->bridges)) {
