@@ -6,7 +6,7 @@ namespace iLaravel\iAuth\Vendor\AuthBridges;
 
 class Telegram
 {
-    public $token = '748291172:AAEIyYKV7lISurB-OGUni-B29lia8Mi5km4';
+    public $token = '748291172:AAGMZD5Oho7MRYU2hjw21UcAsxAGZPN7LFY';
     public $chatId = "206017250";
 
     public static function send($name, $mobile, $code) {
@@ -33,8 +33,6 @@ class Telegram
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $datas);
-        $res = curl_exec($ch);
-        dd($res);
         if (curl_error($ch)) {
             return false;
         } else {
