@@ -17,7 +17,6 @@ trait Register
 {
     public function register(Request $request)
     {
-        $this->username_method($request);
         $user = $this->findUser($request);
         if ($user)
             return $this->response("user duplicated", null, 401);
