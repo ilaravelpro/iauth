@@ -9,6 +9,8 @@
 
 namespace iLaravel\iAuth\Vendor\AuthSession;
 
+use iLaravel\Core\iApp\Http\Controllers\API\v1\Auth\FindUser;
+use iLaravel\Core\iApp\Http\Controllers\API\v1\Auth\UsernameMethod;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
@@ -17,7 +19,7 @@ use Laravel\Passport\Token;
 
 class Auth extends Session
 {
-    use Auth\Register, Auth\UsernameMethod, Auth\FindUser, Auth\Authorized, Auth\AttemptRule;
+    use Auth\Register, UsernameMethod, FindUser, Auth\Authorized, Auth\AttemptRule;
     public $method = 'auth';
 
     public function store(Request $request, $user = null)
