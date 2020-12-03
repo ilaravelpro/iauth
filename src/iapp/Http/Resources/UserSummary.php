@@ -31,9 +31,9 @@ class UserSummary extends JsonResource
         $data['name'] = $this->name;
         if ($this->_username_method !== 'id') {
             $method = $this->{$this->_username_method};
-            if (in_array($this->_username_method, ['email', 'mobile'])) {
+            if (in_array($this->_username_method, ['email', 'mobile']) && !is_string($method)) {
                 $data[$this->_username_method] = new Resource($method);
-                $data["{$this->_username_method}_text"] = $method->text;
+                $data["{$this->_username_method}"] = $method->text;
             }else
                 $data[$this->_username_method] = $method;
         }
