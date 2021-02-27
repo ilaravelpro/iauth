@@ -20,11 +20,11 @@ trait Register
         $user = $this->findUser($request);
         if ($user)
             return $this->response("user duplicated", null, 401);
-        $register = new $this->model;
-        $register->password = Hash::make($request->input('password'));
-        $register->{$this->username_method} = $request->input($this->username_method);
-        $register->role = 'user';
-        $register->save();
+        $data = [];
+        if ($request->input('password')) $data['password'] = Hash::make($request->input('password'));
+        $data[$this->username_method] = $request->input($this->username_method);
+        $data['role'] = 'user';
+        $register = $this->model::create($data);
         return $register;
     }
 }
