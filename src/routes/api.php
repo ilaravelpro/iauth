@@ -13,13 +13,15 @@ Route::namespace('v1')->prefix('v1')->group(function() {
         if (iauth('methods.update.status')) Route::post('/me/{mode?}', 'AuthController@me_update')->name('api.iauth.update');
     });
     Route::prefix('iauth')->group(function() {
-        Route::prefix('session')->group(function() {
-            Route::group(['middleware' => ['auth:apiIf']], function () {
-                Route::delete('/{session}/{token?}', 'AuthController@revoke')->name('api.iauth.session.revoke');
+        if (iauth('routes.api.sessions.status'))
+            Route::prefix('session')->group(function() {
+                Route::group(['middleware' => ['auth:apiIf']], function () {
+                    if (iauth('routes.api.sessions.revoke.status'))
+                        Route::delete('/{session}/{token?}', 'AuthController@revoke')->name('api.iauth.session.revoke');
+                });
+                if (iauth('routes.api.sessions.store.status')) Route::post('/{session}', 'AuthController@store')->name('api.iauth.session.store');
+                if (iauth('routes.api.sessions.verify.status')) Route::post('/{session}/{token}/{pin?}', 'AuthController@verify')->name('api.iauth.session.verify');
+                if (iauth('routes.api.sessions.resend.status')) Route::get('/{session}/{token}', 'AuthController@resend')->name('api.iauth.session.resend');
             });
-            Route::post('/{session}', 'AuthController@store')->name('api.iauth.session.store');
-            Route::post('/{session}/{token}/{pin}', 'AuthController@verify')->name('api.iauth.session.verify');
-            Route::get('/{session}/{token}', 'AuthController@resend')->name('api.iauth.session.resend');
-        });
     });
 });

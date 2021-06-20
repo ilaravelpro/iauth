@@ -29,7 +29,7 @@ class UserSummary extends JsonResource
         $data = [];
         $data['id'] = $this->serial;
         $data['name'] = $this->name;
-        if ($this->_username_method !== 'id') {
+        if ($this->_username_method !== 'id' && $this->role != 'guest') {
             $method = $this->{$this->_username_method};
             if (in_array($this->_username_method, ['email', 'mobile']) && !is_string($method)) {
                 $data[$this->_username_method] = new Resource($method);
@@ -37,6 +37,7 @@ class UserSummary extends JsonResource
             }else
                 $data[$this->_username_method] = $method;
         }
+        $data['session_method'] = $this->_username_method;
         //$data['avatar'] = $this->avatar ? new Files($this->avatar) : null;
         return $data;
     }

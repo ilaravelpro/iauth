@@ -12,7 +12,7 @@ namespace iLaravel\iAuth\iApp;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
-class IAuthSession extends Model
+class AuthSession extends Model
 {
     use \iLaravel\Core\iApp\Modals\Modal;
 
@@ -47,6 +47,11 @@ class IAuthSession extends Model
         return $token;
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(imodal('User'));
+    }
+
     public function getExpiredAtAttribute($value)
     {
         return format_datetime($value, $this->datetime, 'time');
@@ -63,21 +68,21 @@ class IAuthSession extends Model
     }
 
     public function bridges(){
-        return $this->hasMany(imodal('IAuthBridge'), 'session_id');
+        return $this->hasMany(imodal('AuthBridge'), 'session_id');
     }
 
     public function bridgesByMobile(){
-        return $this->hasMany(imodal('IAuthBridge'), 'session_id')->where('method' , 'mobile');
+        return $this->hasMany(imodal('AuthBridge'), 'session_id')->where('method' , 'mobile');
     }
 
     public function bridgesByEmail(){
-        return $this->hasMany(imodal('IAuthBridge'), 'session_id')->where('method' , 'email');
+        return $this->hasMany(imodal('AuthBridge'), 'session_id')->where('method' , 'email');
     }
 
     public function item() {
         if ($this->model){
             $model = imodal($this->model);
-            return $model::find($this->model_id);
+            return $this->model_id ? $model::find($this->model_id) : $model::guest();
         }
         return null;
     }

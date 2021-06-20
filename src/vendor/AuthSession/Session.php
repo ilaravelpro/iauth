@@ -10,31 +10,36 @@
 namespace iLaravel\iAuth\Vendor\AuthSession;
 
 
+use iLaravel\Core\iApp\Exceptions\iException;
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 
 class Session
 {
-    public $vendor, $method, $resource, $model, $sessionModel, $sessionResource, $emailModel, $phoneModel, $username_method;
+    public $vendor, $method, $resource, $model, $sessionModel, $sessionResource, $emailModel, $phoneModel, $username_method, $available_methods;
     public $authCheck = false;
+    public $type = null;
 
     public function __construct()
     {
         if ($this->authCheck && !auth()->check())
             throw new AuthenticationException('Please log in.');
         $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
-        $this->sessionModel = imodal('IAuthSession');
-        $this->sessionResource = iresource('IAuthSession') ?: iresource('Resource');
+        $this->sessionModel = imodal('AuthSession');
+        $this->sessionResource = iresource('AuthSession') ?: iresource('Resource');
         $this->emailModel = imodal('Email');
         $this->phoneModel = imodal('Phone');
         $this->model = imodal('User');
+        $this->type = ipreference("iauth.methods.{$this->method}.type");
     }
 
     public function store(Request $request, $user = null)
     {
         if ($user = $user ? : $this->findUser($request)) {
-            return $this->vendor::pass($request, $this->username_method, UserSummary::class, $user, $this->method);
+            if ($this->available_methods && !in_array($this->username_method, $this->available_methods))
+                throw new iException('Your input must be :methods.', ['methods' => implode(' or ', $this->available_methods)]);
+            return $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method);
         } else
             throw new AuthenticationException('User is not found.');
     }
@@ -50,8 +55,8 @@ class Session
         $authSession = $authSession->where('token', $token);
         $authSession = $authSession->where('revoked', 0)->first();
         if (!$authSession)
-            throw new AuthenticationException('Session was not found or has revoke, please create a session.');
+            throw new iException(['Session was not found or has revoke, please create a :method session.', ['method' => $this->method]]);
         $authSession->update(['revoked' => 1]);
-        return [new $this->sessionResource($authSession), 'The session was successfully revoked.'];
+        return [new $this->sessionResource($authSession), ['The :method session was successfully revoked.', ['method' => $this->method]]];
     }
 }

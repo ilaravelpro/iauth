@@ -11,11 +11,14 @@ namespace iLaravel\iAuth\Vendor\AuthSession;
 
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Illuminate\Support\Facades\Hash;
+use iLaravel\Core\iApp\Http\Controllers\API\v1\Auth\FindUser;
+use iLaravel\Core\iApp\Http\Controllers\API\v1\Auth\UsernameMethod;
 
 class Recovery extends Session
 {
-    use Auth\Register, Auth\UsernameMethod, Auth\FindUser, Auth\Authorized, Auth\AttemptRule;
+    use Auth\Register, UsernameMethod, FindUser, Auth\Authorized, Auth\AttemptRule;
     public $method = 'recovery';
+    public $available_methods = ['email', 'mobile'];
 
     public function verify(Request $request, $session, $token, $pin)
     {
@@ -43,7 +46,7 @@ class Recovery extends Session
                 break;
             case 'verify':
                 return [
-                    'password' => 'required|min:6',
+                    'password' => 'required|min:6|password',
                     'password_confirm' => 'required|same:password',
                 ];
                 break;

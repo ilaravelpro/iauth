@@ -10,7 +10,15 @@
 return [
     'routes' => [
         'api' => [
-            'status' => true
+            'status' => true,
+            'sessions' => [
+                'status' => true,
+                'revoke' => ['status' => true],
+                'store' => ['status' => true],
+                'verify' => ['status' => true],
+                'resend' => ['status' => true],
+            ],
+
         ]
     ],
     'database' => [
@@ -21,20 +29,25 @@ return [
     'methods' => [
         'auth' => [
             'status' => true,
+            'type' => 'code',
             'register' => true,
             'password' => [
                 'status' => false,
-                'after' => true
+                'before' => false,
+                'after' => false,
             ]
         ],
         'register' => [
             'status' => true,
+            'auto' => [
+                'status' => true,
+            ],
         ],
         'verify' => [
             'status' => true,
             'auto' => true,
             'mode' => 'smart',
-            'ever' => true,
+            'never' => [],
             'other' => 'email',
         ],
         'recovery' => [
@@ -73,7 +86,7 @@ return [
     'sessions' => [
         'expired' => [
             'time' => 60,
-            'count' => 3
+            'count' => 5
         ],
         'models' => [
             'auth' => [

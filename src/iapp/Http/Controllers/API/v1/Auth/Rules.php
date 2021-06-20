@@ -32,6 +32,9 @@ trait Rules
                 $rules = $this->vendor->rules($request, $action);
                 break;
         }
+        $model = imodal('AuthSession');
+        if ($model && method_exists($model, 'rules_auth'))
+            $rules = $model::rules_auth($request, $action, $rules);
         return $rules;
     }
 }

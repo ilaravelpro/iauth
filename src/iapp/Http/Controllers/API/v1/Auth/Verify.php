@@ -10,7 +10,7 @@ use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 
 trait Verify
 {
-    public function verify(Request $request, $session, $token, $pin)
+    public function verify(Request $request, $session, $token, $pin = null)
     {
         list($result, $this->statusMessage) = $this->vendor->verify($request, $session, $token, $pin);
         return $result;

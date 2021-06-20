@@ -11,7 +11,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateIAuthBridgesTable extends Migration
+class CreateAuthBridgesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -20,15 +20,18 @@ class CreateIAuthBridgesTable extends Migration
      */
     public function up()
     {
-        Schema::create('i_auth_bridges', function (Blueprint $table) {
+        Schema::create('auth_bridges', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('session_id')->unsigned();
-            $table->foreign('session_id')->references('id')->on('i_auth_sessions')->onDelete('cascade');
             $table->string('method', 100);
             $table->string('pin')->nullable();
+            $table->text('hash')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+        });
+        Schema::table('auth_bridges', function($table) {
+            $table->foreign('session_id')->references('id')->on('i_auth_sessions')->onDelete('cascade');
         });
     }
 
@@ -39,6 +42,6 @@ class CreateIAuthBridgesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('i_auth_bridges');
+        Schema::dropIfExists('auth_bridges');
     }
 }
