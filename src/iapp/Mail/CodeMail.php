@@ -24,7 +24,7 @@ class CodeMail extends Mailable
     public function build()
     {
         return $this->markdown('emails.iauth.code')
-            ->subject(_t("plugins.iauth.mail.sessions.{$this->method}.title"))
+            ->subject(_t(ipreference("iauth.sessions.models.{$this->method}.title")))
             ->with([
                 'method' => $this->method,
                 'creator' => $this->creator,

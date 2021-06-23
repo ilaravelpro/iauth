@@ -90,21 +90,33 @@ return [
         ],
         'models' => [
             'auth' => [
+                'title' => 'Login to account',
+                'message' => 'account login',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\Auth::class
             ],
             'recovery' => [
+                'title' => 'Password recovery',
+                'message' => 'password recovery',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\Recovery::class
             ],
             'email' => [
+                'title' => 'Mobile number verification',
+                'message' => 'mobile number verification',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\Email::class
             ],
             'email_change' => [
+                'title' => 'Mobile number change',
+                'message' => 'mobile number change',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\EmailChange::class
             ],
             'mobile' => [
+                'title' => 'Email verification',
+                'message' => 'email verification',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\Mobile::class
             ],
             'mobile_change' => [
+                'title' => 'Email change',
+                'message' => 'email change',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\MobileChange::class
             ]
         ]

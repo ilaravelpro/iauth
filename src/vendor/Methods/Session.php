@@ -125,7 +125,7 @@ class Session
             if (in_array('email', $this->bridges)) {
                 $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
                 $mailModel = imodal('Mail\CodeMail');
-                Mail::to([$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
+                Mail::to([$this->session->item()->role != 'guest' ? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
                 $methods[] = 'email';
             }
         } else
