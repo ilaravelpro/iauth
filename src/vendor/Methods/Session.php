@@ -51,18 +51,18 @@ class Session
                 $authSession->verified = true;
                 $authSession->save();
                 $result = new $resource($authSession->item());
-                list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, $bridge) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst($authSession->session)]]];
+                list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, $bridge) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]]];
                 return [$result, $message, $authSession];
             }elseif ($authSession->bridges->count() == 0) {
                 $authSession->verified = true;
                 $authSession->save();
                 $result = new $resource($authSession->item());
-                list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, null) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst($authSession->session)]]];
+                list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, null) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]]];
                 return [$result, $message, $authSession];
             }
-            throw new iException('Bridge was not found, please resend code or create a new :method session.', ['method'=> ucfirst($session)]);
+            throw new iException('Code was not found, please resend code or create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
         }
-        throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst($session)]);
+        throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
     }
 
     public function _pass(Request $request, $creator, $type, $method, $resource, $model, $session, $callback = null)
@@ -102,7 +102,7 @@ class Session
             $this->resource = $resource;
             return $this->_passed($callback);
         } else {
-            throw new iException('Session was not found or has expired, please create a :method session.', ['method'=> ucfirst($this->session->session)]);
+            throw new iException('Session was not found or has expired, please create a :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
         }
     }
 
@@ -143,7 +143,7 @@ class Session
         if (in_array('password', $methods))
             $message = 'Please enter your password.';
         else
-            $message = ['The verification code was sent to your :methods', ["methods" => implode(" & ", $methods)]];
+            $message = ['The verification code was sent to your :methods', ["methods" => _t(implode(" & ", $methods))]];
         list($result, $msg, $field) = is_callable($callback) && $callback ? $callback($this->request, $result, $this->session, $methods, $field) : [$result, $message, $field];
         $message = $msg ? : $message;
         return [$result, $message, $this->session, $methods, $field];

@@ -62,9 +62,9 @@ class Auth extends Session
         if (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $this->sessionModel::findByToken($session, $token)->item()->password)) {
             throw new AuthenticationException('Authorization data is not match');
         }
-        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) use ($pin) {
+        $fields = handel_fields([], array_keys($this->rules($request, 'verify')), $request->all());
+        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request2, $result, $session, $bridge) use ($fields, $request, $pin) {
             if ($pin && $this->type == 'pass_code' && $session->item()->role == 'guest') {
-                $fields = handel_fields([], array_keys($this->rules($request, 'verify')), $request->all());
                 $data = [];
                 foreach ($fields as $value)
                     if (_has_key($request->toArray(), $value))
@@ -76,9 +76,11 @@ class Auth extends Session
                 switch ($session->key) {
                     case 'mobile':
                         $register->saveMobile($session->value, Carbon::now()->format('Y-m-d H:i:s'));
+                        $register->saveEmail($data['email'], Carbon::now()->format('Y-m-d H:i:s'));
                         break;
                     case 'email':
                         $register->saveEmail($session->value, Carbon::now()->format('Y-m-d H:i:s'));
+                        $register->saveMobile($data['mobile'], Carbon::now()->format('Y-m-d H:i:s'));
                         break;
                 }
                 $session->creator_id = $register->id;
@@ -104,14 +106,16 @@ class Auth extends Session
             $authSession = $authSession->where('meta->passport', $this->model::findTokenID($bearerToken));
         }
         $authSession = $authSession->where('revoked', 0)->first();
+        $userM = imodal('User');
         if (!$authSession)
-            throw new iException(['Session was not found or has revoke, please create a :method session.', ['method' => $this->method]]);
+            return [$userM::guest(), 'The session was successfully revoked.'];
+        $user = iresource('User');
         $authSession->update(['revoked' => 1]);
         $user = iresource('User');
         $user = new $user($authSession->item());
         if ($access = Token::where('id', $authSession->meta['passport'])->first())
             $access->update(['revoked' => 1]);
-        return [$user, ['The :method session was successfully revoked.', ['method' => $this->method]]];
+        return [$user, 'The session was successfully revoked.'];
     }
 
     public function rules(Request $request, $action)

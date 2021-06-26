@@ -55,8 +55,8 @@ class Session
         $authSession = $authSession->where('token', $token);
         $authSession = $authSession->where('revoked', 0)->first();
         if (!$authSession)
-            throw new iException(['Session was not found or has revoke, please create a :method session.', ['method' => $this->method]]);
+            throw new iException(['Session was not found or has revoked.']);
         $authSession->update(['revoked' => 1]);
-        return [new $this->sessionResource($authSession), ['The :method session was successfully revoked.', ['method' => $this->method]]];
+        return [new $this->sessionResource($authSession), ['The :method session was successfully revoked.', ['method' => _t(ipreference("iauth.sessions.models.{$this->method}.message"))]]];
     }
 }

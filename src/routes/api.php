@@ -9,9 +9,9 @@
 
 Route::namespace('v1')->prefix('v1')->group(function() {
     Route::group(['middleware' => ['auth:api']], function () {
-        if (iauth('methods.get.status')) Route::get('/me', 'AuthController@me')->name('api.iauth.get');
         if (iauth('methods.update.status')) Route::post('/me/{mode?}', 'AuthController@me_update')->name('api.iauth.update');
     });
+    if (iauth('methods.get.status')) Route::get('/me', 'AuthController@me')->name('api.iauth.get')->middleware('auth:apiIf');
     Route::prefix('iauth')->group(function() {
         if (iauth('routes.api.sessions.status'))
             Route::prefix('session')->group(function() {
