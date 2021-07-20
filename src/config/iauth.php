@@ -65,7 +65,7 @@ return [
     ],
     'bridges' => [
         'expired' => [
-            'time' => 3,
+            'time' => 10,
             'count' => 3
         ],
         'models' => [
