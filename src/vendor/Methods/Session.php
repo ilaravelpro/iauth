@@ -117,16 +117,28 @@ class Session
         if ($this->session->item()->role == 'guest' || !in_array($this->session->session, iauth('methods.verify.never', [])) || $this->session->item()->status === 'waiting') {
             if ($this->session->bridgesByMobile()->count() > iauth('bridges.expired.count') || $this->session->bridgesByEmail()->count() > iauth('bridges.expired.count'))
                 throw new iException('The confirmation code has been sent to you. Please try again in :minutes minutes.', ['minutes' => iauth('bridges.expired.time')]);
-            if (in_array('mobile', $this->bridges)) {
-                $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
-                isms_send("iauth.methods.{$this->session->session}.send.code", $this->session->value, ['code' => $bridge->pin]);
-                $methods[] = 'mobile';
-            }
-            if (in_array('email', $this->bridges) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
-                $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
-                $mailModel = imodal('Mail\CodeMail');
-                Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
-                $methods[] = 'email';
+            if (in_array($this->session->item()->username, array_keys(iauth('tester.username')))) {
+                if (iauth('tester.username.' . $this->session->item()->username)) {
+                    if (in_array('mobile', $this->bridges)) {
+                        $bridge = $this->session->bridgesByMobile()->create(['method' => 'test', 'pin' => iauth('tester.username.code')]);
+                        $methods[] = 'email';
+                    }
+                }else {
+                    throw new iException('Tester(:tester) is disable.', ['tester'=> $this->session->item()->username]);
+                }
+
+            }else {
+                if (in_array('mobile', $this->bridges)) {
+                    $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
+                    isms_send("iauth.methods.{$this->session->session}.send.code", $this->session->value, ['code' => $bridge->pin]);
+                    $methods[] = 'mobile';
+                }
+                if (in_array('email', $this->bridges) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
+                    $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
+                    $mailModel = imodal('Mail\CodeMail');
+                    Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
+                    $methods[] = 'email';
+                }
             }
         } else
             if (in_array('password', $this->bridges) || ($this->session->item()->role != 'guest' && $this->type == 'pass_code')) {

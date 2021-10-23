@@ -26,6 +26,13 @@ return [
             'include' => true
         ],
     ],
+    "tester" => [
+        "username" => [
+            "google" => false,
+            "apple" => false,
+        ],
+        "code" => 485251
+    ],
     'methods' => [
         'auth' => [
             'status' => true,
