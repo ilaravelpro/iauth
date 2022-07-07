@@ -22,8 +22,8 @@ class EmailChange extends Session
     {
         $user = $user ?: auth()->user();
         $email = $email ?: $request->input('email');
-        if ($user->email->text != $email)
-            throw new AuthenticationException('Email is not equal.');
+        if ($user->email && $user->email->text == $email)
+            throw new AuthenticationException('Email is equal.');
         return parent::store($request, $user);
     }
 
