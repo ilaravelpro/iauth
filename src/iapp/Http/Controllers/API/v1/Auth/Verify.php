@@ -12,6 +12,7 @@ trait Verify
 {
     public function verify(Request $request, $session, $token, $pin = null)
     {
+        $this->setVendor($request);
         list($result, $this->statusMessage) = $this->vendor->verify($request, $session, $token, $pin);
         return $result;
     }

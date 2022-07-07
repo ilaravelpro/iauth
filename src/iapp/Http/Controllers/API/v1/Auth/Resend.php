@@ -12,6 +12,7 @@ trait Resend
 {
     public function resend(Request $request, $session, $token)
     {
+        $this->setVendor($request);
         list($result, $this->statusMessage) = $this->vendor->resend($request, $session, $token);
         return $result;
     }

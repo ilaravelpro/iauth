@@ -69,6 +69,15 @@ return [
         'update' => [
             'status' => true,
         ],
+        'google_authenticator' => [
+            'title' => env('APP_NAME'),
+            'status' => true,
+            'type' => 'code',
+        ],
+        'google_authenticator_register' => [
+            'status' => true,
+            'type' => 'code',
+        ],
     ],
     'bridges' => [
         'expired' => [
@@ -83,6 +92,10 @@ return [
             'email' => [
                 'status' => true,
                 'sessions' => ['auth', 'register', 'recovery', 'password', 'email', 'email_change']
+            ],
+            'google' => [
+                'status' => true,
+                'sessions' => ['google_register', 'googler_auther', 'mobile_change', 'email_change', 'mobile', 'email', 'recovery', 'password']
             ],
             'password' => [
                 'status' => true,
@@ -115,6 +128,16 @@ return [
                 'title' => 'Mobile number change',
                 'message' => 'mobile number change',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\EmailChange::class
+            ],
+            'google_authenticator_register' => [
+                'title' => 'Google authenticator register',
+                'message' => 'google authenticator register',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticatorRegister::class
+            ],
+            'google_authenticator' => [
+                'title' => 'Google authenticator verification',
+                'message' => 'google authenticator verification',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticator::class
             ],
             'mobile' => [
                 'title' => 'Email verification',

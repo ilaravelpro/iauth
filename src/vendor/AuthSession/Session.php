@@ -23,7 +23,7 @@ class Session
 
     public function __construct()
     {
-        if ($this->authCheck && !auth()->check())
+        if ($this->authCheck && (!auth()->check()))
             throw new AuthenticationException('Please log in.');
         $this->vendor = \iLaravel\iAuth\Vendor\Methods\Session::class;
         $this->sessionModel = imodal('AuthSession');
@@ -37,6 +37,7 @@ class Session
     public function store(Request $request, $user = null)
     {
         if ($user = $user ? : $this->findUser($request)) {
+            $this->sessionModel::where('model', 'User')->where('model_id', $user->id)->where('session', $this->method)->where('verified', 0)->delete();
             if ($this->available_methods && !in_array($this->username_method, $this->available_methods))
                 throw new iException('Your input must be :methods.', ['methods' => implode(' or ', $this->available_methods)]);
             return $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method);

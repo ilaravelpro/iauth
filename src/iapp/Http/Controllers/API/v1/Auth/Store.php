@@ -13,6 +13,7 @@ trait Store
 {
     public function store(Request $request, $session)
     {
+        $this->setVendor($request);
         list($result, $this->statusMessage) = $this->vendor->store($request);
         return $result;
     }

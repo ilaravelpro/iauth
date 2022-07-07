@@ -12,7 +12,7 @@ namespace iLaravel\iAuth\iApp\Http\Controllers\API\v1;
 use iLaravel\Core\iApp\Http\Controllers\API\Methods\Controller\Show;
 use iLaravel\Core\iApp\Http\Controllers\API\Controller;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Http\Request;
+use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 
 class AuthController extends Controller
 {
@@ -23,12 +23,8 @@ class AuthController extends Controller
         parent::__construct($request);
         $this->model = imodal('User');
         $this->resourceClass = iresource('User');
-        if ($request->{'session'}){
-            if (!($model = iauth("sessions.models.{$request->{'session'}}.model")))
-                throw new AuthenticationException('Not found your session model.');
-            $this->vendor = new $model();
-        }
     }
+    
     use Show;
 
     use Auth\Store,
@@ -37,5 +33,6 @@ class AuthController extends Controller
         Auth\Revoke,
         Auth\Rules,
         Auth\Me,
-        Auth\MeUpdate;
+        Auth\MeUpdate,
+        Auth\SetVendor;
 }

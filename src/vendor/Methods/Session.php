@@ -82,7 +82,8 @@ class Session
 
         $this->session = new $this->sessionModel(['session' => $this->session]);
         $this->session->key = $this->method;
-        $this->session->value = $this->request->input($this->method);
+        if (!is_array($this->request->input($this->method)))
+            $this->session->value = $this->request->input($this->method);
         $this->session->creator_id = $this->creator->role == 'guest' ? null : $this->creator->id;
         if ($this->creator->role != 'guest' && isset($this->model->id)) {
             $this->session->model = class_name($this->model);

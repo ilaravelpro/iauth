@@ -17,13 +17,14 @@ class MobileChange extends Session
 {
     public $method = 'mobile_change';
     public $authCheck = true;
+    public $username_method = 'mobile';
 
     public function store(Request $request, $user = null, $mobile = null)
     {
         $user = $user ?: auth()->user();
         $mobile = $mobile ?: $request->input('mobile');
-        if ($user->mobile->text != $mobile)
-            throw new AuthenticationException('Mobile is not equal.');
+        if ($user->mobile && $user->mobile->text == $mobile)
+            throw new AuthenticationException('Mobile is equal.');
         return parent::store($request, $user);
     }
 
@@ -49,7 +50,7 @@ class MobileChange extends Session
         switch ($action) {
             case 'store':
                 return [
-                    'mobile' => "required|max:191|numeric",
+                    'mobile' => "required|numeric",
                 ];
                 break;
         }

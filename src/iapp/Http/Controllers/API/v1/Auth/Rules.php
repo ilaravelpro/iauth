@@ -12,6 +12,7 @@ trait Rules
 {
     public function rules(Request $request, $action)
     {
+        $this->setVendor($request);
         $rules = [];
         switch ($action) {
             case 'update':
@@ -29,7 +30,7 @@ trait Rules
                 break;
             case 'store':
             case 'verify':
-                $rules = $this->vendor->rules($request, $action);
+                $rules = $this->vendor ? $this->vendor->rules($request, $action) : [];
                 break;
         }
         $model = imodal('AuthSession');

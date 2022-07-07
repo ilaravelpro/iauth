@@ -25,7 +25,7 @@ class CreateAuthSessionsTable extends Migration
             $table->bigInteger('creator_id')->nullable()->unsigned();
             $table->string('model')->nullable();
             $table->bigInteger('model_id')->nullable();
-            $table->string('key', 110)->index();
+            $table->string('key', 110)->nullable()->index();
             $table->string('value', 110)->nullable();
             $table->string('session', 50)->index();
             $table->string('token')->nullable();

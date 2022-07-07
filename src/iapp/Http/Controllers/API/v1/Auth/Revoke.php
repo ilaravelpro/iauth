@@ -12,6 +12,7 @@ trait Revoke
 {
     public function revoke(Request $request, $session, $token = null)
     {
+        $this->setVendor($request);
         list($result, $this->statusMessage) = $this->vendor->revoke($request, $session, $token);
         return $result;
     }
