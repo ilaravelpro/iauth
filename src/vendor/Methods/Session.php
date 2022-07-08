@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use iLaravel\Core\iApp\Exceptions\iException;
 use iLaravel\iAuth\Vendor\AuthBridges\Mobile;
 use iLaravel\iAuth\Vendor\AuthBridges\Telegram;
+use iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticator;
 use Illuminate\Auth\AuthenticationException;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Exception;
@@ -45,7 +46,12 @@ class Session
     public function _verify(Request $request, $session, $token, $pin, $resource, $callback = null)
     {
         if ($authSession = $this->sessionModel::findByToken($session, $token)) {
-            if (($authSession->item()->role == 'guest' || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first()) {
+            $ga = GoogleAuthenticator::check($request, $authSession->item(), $pin);
+            if (($authSession->item()->role == 'guest' || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
+                if ($ga){
+                    $bridge->pin = $pin;
+                    $authSession->meta = array_merge(['google' => true], $authSession->meta ? : []);
+                }
                 $bridge->verified_at = Carbon::now();
                 $bridge->save();
                 $authSession->verified = true;
@@ -101,13 +107,13 @@ class Session
             $this->model = $this->session->item();
             $this->method = $this->session->key;
             $this->resource = $resource;
-            return $this->_passed($callback);
+            return $this->_passed($callback, true);
         } else {
             throw new iException('Session was not found or has expired, please create a :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
         }
     }
 
-    public function _passed($callback)
+    public function _passed($callback, $resend = false)
     {
         $methods = [];
         $this->bridges = Bridge::sort($this->model, $this->session->session, $this->method);
@@ -129,16 +135,22 @@ class Session
                 }
 
             }else {
-                if (in_array('mobile', $this->bridges)) {
-                    $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
-                    isms_send("iauth.methods.{$this->session->session}.send.code", $this->session->value, ['code' => $bridge->pin]);
-                    $methods[] = 'mobile';
-                }
-                if (in_array('email', $this->bridges) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
-                    $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
-                    $mailModel = imodal('Mail\CodeMail');
-                    Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
-                    $methods[] = 'email';
+                if ($this->session->item()->google_authenticator_secret && !$resend) {
+                    $bridge = $this->session->bridgesByMobile()->create(['method' => 'google']);
+                    $methods[] = 'google';
+                }else {
+                    if (in_array('mobile', $this->bridges)) {
+                        $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
+                        if (function_exists('isms_send'))
+                            isms_send("iauth.methods.{$this->session->session}.send.code", $this->session->value, ['code' => $bridge->pin]);
+                        $methods[] = 'mobile';
+                    }
+                    if (in_array('email', $this->bridges) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
+                        $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
+                        $mailModel = imodal('Mail\CodeMail');
+                        Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
+                        $methods[] = 'email';
+                    }
                 }
             }
         } else

@@ -13,8 +13,10 @@ namespace iLaravel\iAuth\Vendor\AuthBridges;
 class Mobile
 {
     public static function send($name, $mobile, $code) {
-        $mobile = \iLaravel\Core\Vendor\Validations\iPhone::parse($mobile);
-        \iLaravel\iSMS\Vendor\Service::sendByPatternFast(2,$mobile['number'],["name" => $name ? : '', "code" => $code],'ippanel');
+        try {
+            $mobile = \iLaravel\Core\Vendor\Validations\iPhone::parse($mobile);
+            \iLaravel\iSMS\Vendor\Service::sendByPatternFast(2,$mobile['number'],["name" => $name ? : '', "code" => $code],'ippanel');
+        }catch (\Exception $exception) {}
         return true;
     }
 }

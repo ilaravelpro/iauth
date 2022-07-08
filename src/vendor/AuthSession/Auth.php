@@ -17,6 +17,7 @@ use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Laravel\Passport\Token;
 
 class Auth extends Session
@@ -32,10 +33,11 @@ class Auth extends Session
         $newUser = false;
         if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.auto.status'))
             list($user, $newUser) = [$this->register($request), true];
-        elseif(!in_array($this->username_method, ['username', 'id']) && !($user) && $this->type == 'pass_code')
+        elseif(!in_array($this->username_method, ['username', 'id']) && !($user) && in_array($this->type, ['code', 'pass_code']))
             list($user, $newUser) = [$this->model::guest(), true];
         if ($user) {
-            list($result, $message, $session) = $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method, function ($request, $result, $session, $methods, $field) {
+            list($result, $message, $session) = $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method, function ($request, $result, $session, $methods, $field) use($newUser) {
+                $session->update(['meta->new_user' => $newUser]);
                 if ($this->type == 'pass_code' || !in_array($session->session, iauth('methods.verify.never', [])) || $session->item()->status === 'waiting')
                     return [$result, null, $field];
                 if (iauth('methods.auth.password.before') && !Hash::check($request->input('password'), $session->item()->password))
@@ -50,6 +52,7 @@ class Auth extends Session
             });
             $additional = [];
             if (iauth('methods.auth.password.after')) $additional['password_after'] = iauth('methods.auth.password.after');
+            $additional['new_user'] = $user->status == "watting" || $newUser;
             if (count($additional)) $result->additional(array_merge_recursive($result->additional, ['additional' => $additional]));
             return [$result, $message];
         } else {
@@ -59,11 +62,17 @@ class Auth extends Session
 
     public function verify(Request $request, $session, $token, $pin = null)
     {
-        if (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $this->sessionModel::findByToken($session, $token)->item()->password)) {
+        $userModel = imodal('User');
+        $ref_status = iauth('methods.register.ref', false);
+        $user = $this->sessionModel::findByToken($session, $token)->item();
+        if ($user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
             throw new AuthenticationException('Authorization data is not match');
         }
+        if ($ref_status && $request->ref_code && is_string($request->ref_code) && !$userModel::id($request->ref_code)){
+            throw ValidationException::withMessages(['ref_code' => 'Invitation Code is invalid']);
+        }
         $fields = handel_fields([], array_keys($this->rules($request, 'verify')), $request->all());
-        return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request2, $result, $session, $bridge) use ($fields, $request, $pin) {
+        return $this->vendor::verify($request, $session, $token, $pin, UserSummary::class, function ($request2, $result, $session, $bridge) use ($fields, $request, $pin, $userModel, $ref_status) {
             if ($pin && $this->type == 'pass_code' && $session->item()->role == 'guest') {
                 $data = [];
                 foreach ($fields as $value)
@@ -71,20 +80,24 @@ class Auth extends Session
                         $data = _set_value($data, $value, _get_value($request->toArray(), $value));
                 $data['password'] = Hash::make($data['password']);
                 unset($data['terms']);
-                $userModel = imodal('User');
                 $register = $userModel::create($data);
+                if ($ref_status)
+                $register->update(['ref_code' => $request->ref_code]);
                 switch ($session->key) {
                     case 'mobile':
                         $register->saveMobile($session->value, Carbon::now()->format('Y-m-d H:i:s'));
-                        $register->saveEmail($data['email'], Carbon::now()->format('Y-m-d H:i:s'));
+                        if (isset($data['email']))
+                            $register->saveEmail($data['email'], Carbon::now()->format('Y-m-d H:i:s'));
                         break;
                     case 'email':
                         $register->saveEmail($session->value, Carbon::now()->format('Y-m-d H:i:s'));
-                        $register->saveMobile($data['mobile'], Carbon::now()->format('Y-m-d H:i:s'));
+                        if (isset($data['mobile']))
+                            $register->saveMobile($data['mobile'], Carbon::now()->format('Y-m-d H:i:s'));
                         break;
                 }
                 $session->creator_id = $register->id;
                 $session->model_id = $register->id;
+                $session->meta = array_merge(['ref_code' => $request->ref_code], $session->meta ? : []);
                 $session->save();
             }
             list($result, $token, $message) = $this->authorized($session->item());
@@ -111,7 +124,6 @@ class Auth extends Session
             return [$userM::guest(), 'The session was successfully revoked.'];
         $user = iresource('User');
         $authSession->update(['revoked' => 1]);
-        $user = iresource('User');
         $user = new $user($authSession->item());
         if ($access = Token::where('id', $authSession->meta['passport'])->first())
             $access->update(['revoked' => 1]);
@@ -120,16 +132,18 @@ class Auth extends Session
 
     public function rules(Request $request, $action)
     {
+        $confirm_status = iauth('methods.auth.password.confirm', false);
+        $confirm = $confirm_status ? '|confirmed' : '';
         switch ($action) {
             case 'store':
                 return [
                     'username' => 'required',
-                    'password' => iauth('methods.auth.password.before') ? 'required|min:6' : 'nullable',
+                    'password' => (iauth('methods.auth.password.before') ? 'required|min:6' : 'nullable') . $confirm,
                 ];
                 break;
             case 'verify':
                 return [
-                    'password' => (!$request->pin && $this->type == 'pass_code') || iauth('methods.auth.password.after') ? 'required|min:6' : 'nullable',
+                    'password' => ((!$request->pin && $this->type == 'pass_code') || iauth('methods.auth.password.after') ? 'required|min:6' : 'nullable') . $confirm,
                 ];
                 break;
         }

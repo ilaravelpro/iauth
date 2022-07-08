@@ -10,13 +10,14 @@
 
 namespace iLaravel\iAuth\Vendor\AuthSession\Auth;
 
+use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
 
 trait Authorized
 {
     public function authorized($model)
     {
-        $resource = iresource('User');
+        $resource = UserSummary::class;
         $result = new $resource($model);
         if ($result->status != 'active') {
             if (iauth('methods.verify.auto'))
