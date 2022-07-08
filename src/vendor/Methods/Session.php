@@ -167,6 +167,8 @@ class Session
         ]);
         if (in_array('password', $methods))
             $message = 'Please enter your password.';
+        elseif (in_array('google', $methods))
+            $message = 'Please check out the Google Authenticator app.';
         else
             $message = ['The verification code was sent to your :methods', ["methods" => _t(implode(" & ", $methods))]];
         list($result, $msg, $field) = is_callable($callback) && $callback ? $callback($this->request, $result, $this->session, $methods, $field) : [$result, $message, $field];
