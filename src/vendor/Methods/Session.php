@@ -17,6 +17,7 @@ use iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticator;
 use Illuminate\Auth\AuthenticationException;
 use iLaravel\Core\iApp\Http\Requests\iLaravel as Request;
 use Exception;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class Session
@@ -43,9 +44,30 @@ class Session
         return (new self())->_verify($request, $session, $token, $pin, $resource, $callback);
     }
 
+    public static function verify_second(Request $request, $session, $token, $pin, $resource, $callback = null)
+    {
+        return (new self())->_verify_second($request, $session, $token, $pin, $resource, $callback);
+    }
+
+    public function checkPassword($position, $request, $session, $callback = null){
+        $ok = true;
+        if ($session->item()->role != 'guest' && iauth("methods.{$session->session}.password.{$position}")){
+            $type = iauth("methods.{$session->session}.password.type", 'login');
+            if ($type == "login")
+                $ok = Hash::check($request->input('password') ? : $request->input($type.'_password'), $session->item()->password);
+            else
+                $ok = Hash::check($request->input($type.'_password'), $session->item()->{$type.'_password'});
+            if (!$ok) {
+                throw new iException('Please enter the correct :type password.', ['type' => $type]);
+            }
+        }
+        return $ok;
+    }
+
     public function _verify(Request $request, $session, $token, $pin, $resource, $callback = null)
     {
         if ($authSession = $this->sessionModel::findByToken($session, $token)) {
+            $this->checkPassword('after', $request, $authSession);
             $ga = GoogleAuthenticator::check($request, $authSession->item(), $pin);
             if (($authSession->item()->role == 'guest' || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
                 if ($ga){
@@ -58,15 +80,56 @@ class Session
                 $authSession->save();
                 $result = new $resource($authSession->item());
                 list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, $bridge) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]]];
+                if ($log_modal = imodal('Log')) $log_modal::where('model', class_name($this->sessionModel))->where('model_id', $authSession->id)->update(['type_id' => $result->resource->id]);
+                request()->merge(['log_model' => class_name($this->sessionModel),'log_model_id' => $authSession->id, 'log_type' => class_name($result->resource),'log_type_id' => $result->resource->id]);
                 return [$result, $message, $authSession];
             }elseif ($authSession->bridges->count() == 0) {
                 $authSession->verified = true;
                 $authSession->save();
                 $result = new $resource($authSession->item());
                 list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, null) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]]];
+                if ($log_modal = imodal('Log')) $log_modal::where('model', class_name($this->sessionModel))->where('model_id', $authSession->id)->update(['type_id' => $result->resource->id]);
+                request()->merge(['log_model' => class_name($this->sessionModel),'log_model_id' => $authSession->id, 'log_type' => class_name($result->resource),'log_type_id' => $result->resource->id]);
                 return [$result, $message, $authSession];
             }
             throw new iException('Code was not found, please resend code or create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
+        }
+        throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
+    }
+
+    public function _verify_second(Request $request, $session, $token, $pin, $resource, $callback = null)
+    {
+        if ($authSession = $this->sessionModel::findByToken($session, $token)) {
+            $this->checkPassword('after', $request, $authSession);
+            $bridges = $authSession->bridges;
+            $bridges = (object)($bridges ? $authSession->bridges->groupBy('method')->map(function ($items) {
+                return $items->pluck('pin', 'id');
+            })->toArray() : []);
+            $bridges_verifyed = [];
+            if ($bridges->{$authSession->key} && array_search($pin, $bridges->{$authSession->key}) !== false)
+                $bridges_verifyed[$authSession->key] = array_search($pin, $bridges->{$authSession->key});
+            else throw new iException(ucfirst($authSession->key) . ' Verification Code was not found, please resend code or create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
+            $second_bridges = iauth('methods.' . $authSession->session . '.second_bridges', []);
+            foreach ($second_bridges as $second_bridge) {
+                if (isset($bridges->$second_bridge)) {
+                    $request_code = $request->{$second_bridge . "_code"};
+                    if ($bridges->$second_bridge && array_search($request_code, $bridges->$second_bridge) !== false)
+                        $bridges_verifyed[$second_bridge] = array_search($request_code, $bridges->$second_bridge);
+                    elseif($second_bridge == 'google' && GoogleAuthenticator::check($request, $authSession->item(), $request_code))
+                        $bridges_verifyed[$second_bridge] = array_keys($bridges->{$second_bridge})[0];
+                    else throw new iException(ucfirst($second_bridge) . ' Verification Code was not found, please resend code or create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
+                }else{
+                    throw new iException(ucfirst($second_bridge) . ' Verification Code was not found, please resend code.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
+                }
+            }
+            $authSession->bridges()->whereIn('id', array_values($bridges_verifyed))->update(['verified_at' => Carbon::now()]);
+            $authSession->verified = true;
+            $authSession->save();
+            $result = new $resource($authSession->item());
+            list($result, $message) = is_callable($callback) && $callback ? $callback($request, $result, $authSession, $second_bridges) : [$result, ["The session :method was successfully verified.", ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]]];
+            if ($log_modal = imodal('Log')) $log_modal::where('model', class_name($this->sessionModel))->where('model_id', $authSession->id)->update(['type_id' => $result->resource->id]);
+            request()->merge(['log_model' => class_name($this->sessionModel),'log_model_id' => $authSession->id, 'log_type' => class_name($result->resource),'log_type_id' => $result->resource->id]);
+            return [$result, $message, $authSession];
         }
         throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
     }
@@ -85,8 +148,7 @@ class Session
         $this->session = $session;
         $this->resource = $resource;
         $this->type = $type;
-
-        $this->session = new $this->sessionModel(['session' => $this->session]);
+        $this->session = new $this->sessionModel(['session' => $this->session, 'ip' => _get_user_ip()]);
         $this->session->key = $this->method;
         if (!is_array($this->request->input($this->method)))
             $this->session->value = $this->request->input($this->method);
@@ -96,6 +158,7 @@ class Session
             $this->session->model_id = $this->model->id;
         }elseif ($this->creator->role == 'guest')
             $this->session->model = class_name($this->model);
+        $this->checkPassword('before', $request, $this->session);
         return $this->_passed($callback);
     }
 
@@ -116,10 +179,11 @@ class Session
     public function _passed($callback, $resend = false)
     {
         $methods = [];
-        $this->bridges = Bridge::sort($this->model, $this->session->session, $this->method);
+        $this->bridges = Bridge::sort($this->model, $this->session, $this->session->session, $this->method);
         if (!count($this->bridges))
             throw new AuthenticationException('Not found Verify Method.');
         $this->session->save();
+        request()->merge(['log_model' => class_name($this->sessionModel),'log_model_id' => $this->session->id, 'log_type' => $this->session->model,'log_type_id' => $this->model->id]);
         $field = 'code';
         if ($this->session->item()->role == 'guest' || !in_array($this->session->session, iauth('methods.verify.never', [])) || $this->session->item()->status === 'waiting') {
             if ($this->session->bridgesByMobile()->count() > iauth('bridges.expired.count') || $this->session->bridgesByEmail()->count() > iauth('bridges.expired.count'))
@@ -135,20 +199,22 @@ class Session
                 }
 
             }else {
-                if ($this->session->item()->google_authenticator_secret && !$resend) {
+                $second_bridges = iauth('methods.' . $this->session->session . '.second_bridges', []);
+                $second_bridge = in_array($this->request->bridge, $second_bridges) ? $this->request->bridge : null;
+                if (!$second_bridge && in_array('google', $this->bridges) && $this->session->item()->google_authenticator_secret && !$resend) {
                     $bridge = $this->session->bridgesByMobile()->create(['method' => 'google']);
                     $methods[] = 'google';
                 }else {
-                    if (in_array('mobile', $this->bridges)) {
+                    if ($second_bridge == 'mobile' || (!$second_bridge && in_array('mobile', $this->bridges))) {
                         $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
                         if (function_exists('isms_send'))
-                            isms_send("iauth.methods.{$this->session->session}.send.code", $this->session->value, ['code' => $bridge->pin]);
+                            isms_send("iauth.methods.{$this->session->session}.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, ['code' => $bridge->pin]);
                         $methods[] = 'mobile';
                     }
-                    if (in_array('email', $this->bridges) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
+                    if ($second_bridge == 'email' || (!$second_bridge && in_array('email', $this->bridges)) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
                         $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
                         $mailModel = imodal('Mail\CodeMail');
-                        Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->creator, $this->model, $this->session, $bridge));
+                        if ($this->session->item()->email) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
                         $methods[] = 'email';
                     }
                 }

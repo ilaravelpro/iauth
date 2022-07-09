@@ -31,9 +31,6 @@ class AuthBridge extends Model
     protected static function boot()
     {
         parent::boot();
-        parent::deleting(function (self $event) {
-            self::resetRecordsId();
-        });
         parent::creating(function (self $event) {
             if (!$event->pin) $event->pin = rand(100000, 999999);
             if (!$event->expires_at) $event->expires_at =  Carbon::now()->addMinutes(iauth('bridges.expired.time'));

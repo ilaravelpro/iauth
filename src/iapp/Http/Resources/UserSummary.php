@@ -38,6 +38,10 @@ class UserSummary extends JsonResource
                 $data[$this->_username_method] = $method;
         }
         $data['session_method'] = $this->_username_method;
+        foreach ($data as $index => $datum) {
+            if (strpos($index, 'password') !== false)
+                unset($data[$index]);
+        }
         //$data['avatar'] = $this->avatar ? new Files($this->avatar) : null;
         return $data;
     }

@@ -37,7 +37,9 @@ class Session
     public function store(Request $request, $user = null)
     {
         if ($user = $user ? : $this->findUser($request)) {
-            $this->sessionModel::where('model', 'User')->where('model_id', $user->id)->where('session', $this->method)->where('verified', 0)->delete();
+            foreach ($this->sessionModel::where('model', 'User')->where('model_id', $user->id)->where('session', $this->method)->where('verified', 0)->get() as $item) {
+                $item->delete();
+            }
             if ($this->available_methods && !in_array($this->username_method, $this->available_methods))
                 throw new iException('Your input must be :methods.', ['methods' => implode(' or ', $this->available_methods)]);
             return $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method);

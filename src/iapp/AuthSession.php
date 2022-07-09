@@ -33,7 +33,7 @@ class AuthSession extends Model
     {
         parent::boot();
         parent::deleting(function (self $event) {
-            self::resetRecordsId();
+            $event->bridges()->delete();
         });
         parent::creating(function (self $event) {
             if (!$event->token) $event->token = self::generateToken($event->session);
@@ -41,6 +41,11 @@ class AuthSession extends Model
         });
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(imodal('User'));
+    }
+    
     public static function generateToken($session, $token = null) {
         if (!$token || static::findByToken($session, $token))
             return static::generateToken($session, \Str::random(110));

@@ -102,7 +102,7 @@ class Auth extends Session
             }
             list($result, $token, $message) = $this->authorized($session->item());
             if ($result->status == 'active') {
-                $session->meta = ['passport' => $this->model::findTokenID($token)];
+                $session->meta = array_merge(['passport' => $this->model::findTokenID($token)], $session->meta ? : []);
                 $session->save();
             }
             return [$result, $message];

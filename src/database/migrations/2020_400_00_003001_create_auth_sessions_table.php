@@ -31,7 +31,8 @@ class CreateAuthSessionsTable extends Migration
             $table->string('token')->nullable();
             $table->boolean('revoked')->default(0);
             $table->boolean('verified')->default(0);
-            $table->text('meta')->nullable();
+            $table->text('ip')->nullable();
+            $table->longText('meta')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamps();
         });
