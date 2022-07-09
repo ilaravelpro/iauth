@@ -42,7 +42,8 @@ class Email extends Session
             $email->domain  = $domain;
             $email->verified_at  = Carbon::now();
             $email->save();
-            return [$result, null];
+            $message = _t(':method has been set.', ['method' => ucfirst($this->username_method)]);
+            return [$result, $message];
         });
     }
 

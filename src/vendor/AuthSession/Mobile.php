@@ -43,7 +43,8 @@ class Mobile extends Session
             $mobile->number  = $imobile['number'];
             $mobile->verified_at  = Carbon::now();
             $mobile->save();
-            return [$result, null];
+            $message = _t(':method has been set.', ['method' => ucfirst($this->username_method)]);
+            return [$result, $message];
         });
     }
 
