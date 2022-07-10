@@ -53,6 +53,7 @@ class Auth extends Session
             $additional = [];
             if (iauth('methods.auth.password.after')) $additional['password_after'] = iauth('methods.auth.password.after');
             $additional['new_user'] = $user->status == "watting" || $newUser;
+            $additional['remote_login_verification'] = $user->remote_login_verification !== false;
             if (count($additional)) $result->additional(array_merge_recursive($result->additional, ['additional' => $additional]));
             return [$result, $message];
         } else {
@@ -64,7 +65,9 @@ class Auth extends Session
     {
         $userModel = imodal('User');
         $ref_status = iauth('methods.register.ref', false);
-        $user = $this->sessionModel::findByToken($session, $token)->item();
+        $authSession = $this->sessionModel::findByToken($session, $token);
+        if (!$authSession) throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$authSession->session}.message")))]);
+        $user = $authSession->item();
         if ($user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
             throw new AuthenticationException('Authorization data is not match');
         }
@@ -72,6 +75,16 @@ class Auth extends Session
             throw ValidationException::withMessages(['ref_code' => 'Invitation Code is invalid']);
         }
         $fields = handel_fields([], array_keys($this->rules($request, 'verify')), $request->all());
+        if ($user->remote_login_verification === false) {
+            list($result, $token, $message) = $this->authorized($user);
+            $authSession->verified = true;
+            $authSession->save();
+            if ($result->status == 'active') {
+                $authSession->meta = array_merge(['passport' => $this->model::findTokenID($token)], $authSession->meta ? : []);
+                $authSession->save();
+            }
+            return [$result, $message];
+        }
         return $this->vendor::verify($request, $session, $token, $pin, UserSummary::class, function ($request2, $result, $session, $bridge) use ($fields, $request, $pin, $userModel, $ref_status) {
             if ($pin && $this->type == 'pass_code' && $session->item()->role == 'guest') {
                 $data = [];

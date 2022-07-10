@@ -41,7 +41,9 @@ class Password extends Session
         $this->username_method = "{$request->type}_password";
         return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) {
             $user = $session->item();
-            $user->{$session->meta['type'] == "login" ? "password" :$this->username_method} = Hash::make($request->input($this->username_method));
+            $field = $session->meta['type'] == "login" ? "password" :$this->username_method;
+            $user->{$field} = Hash::make($request->input($this->username_method));
+            $user->{$this->username_method . "_level"} = _level_password($request->input($this->username_method));
             $user->save();
             $message = _t(':type Password has been set.', ['type' => ucfirst($session->meta['type'])]);
             return [$result, $message];

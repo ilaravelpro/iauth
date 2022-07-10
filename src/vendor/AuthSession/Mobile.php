@@ -25,11 +25,13 @@ class Mobile extends Session
     public function store(Request $request, $user = null, $mobile = null)
     {
         if ($this->phoneModel::findByMobile($mobile ?: $request->input('mobile'), 'User', null, 'mobile', true))
-            throw new iException([':field has already been verified or registered for another user.'], ['field' => 'Mobile']);
+            throw new iException(':field has already been verified or registered for another user.', ['field' => 'Mobile']);
         $mobile = $mobile ? :  $request->input('mobile');
         if (is_array($mobile)) $mobile = $mobile['full'];
         $request->merge(['mobile' => $mobile]);
         $user = $user ? : auth()->user();
+        if ($user->mobile && $user->mobile->verified_at && iauth("methods.{$this->method}.one", false))
+            throw new iException('You have already set up your :field.', ['field' => 'mobile']);
         return parent::store($request, $user);
     }
 

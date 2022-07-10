@@ -34,6 +34,8 @@ class GoogleAuthenticatorRegister extends Session
         $user = $user ? : auth()->user();
         if (!$user)
             throw new AuthenticationException('User not found.');
+        if ($user->google_authenticator_secret && iauth("methods.{$this->method}.one", false))
+            throw new iException('You have already set up your :field.', ['field' => 'google authenticator']);
         $ga = $this->google_auther->create('iAmirNet', iauth('methods.google_authenticator.title') . " (" . ($user->username ? : ($user->email ? $user->email->text : $user->serial)) .")");
         $request->merge($ga);
         list($result, $message, $session) = parent::store($request, $user);
@@ -63,12 +65,21 @@ class GoogleAuthenticatorRegister extends Session
     }
 
     public function rules(Request $request, $action) {
+        $type = iauth("methods.google_authenticator_register.password.type", 'login');
         switch ($action) {
-            case 'sotore' : return [];
+            case 'sotore' :
+                $rules = [];
+                if (iauth('methods.google_authenticator_register.password.after'))
+                    $rules[$type . '_password'] = 'required|min:6';
+                return $rules;
+                break;
             case 'verify':
-                return [
+                $rules = [
                     'code' => "required|numeric|min:6",
                 ];
+                if (iauth('methods.google_authenticator_register.password.after'))
+                    $rules[$type . '_password'] = 'required|min:6';
+                return $rules;
                 break;
         }
     }

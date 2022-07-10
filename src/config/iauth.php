@@ -79,6 +79,7 @@ return [
         ],
         'mobile' => [
             'status' => true,
+            'one' => true,
             'second_bridges' => ['email'],
             'password' => [
                 'status' => true,
@@ -89,6 +90,7 @@ return [
         ],
         'email' => [
             'status' => true,
+            'one' => true,
             'second_bridges' => ['mobile'],
             'password' => [
                 'status' => true,
@@ -104,7 +106,14 @@ return [
         ],
         'google_authenticator_register' => [
             'status' => true,
+            'one' => true,
             'type' => 'code',
+            'password' => [
+                'status' => true,
+                'before' => true,
+                'after' => true,
+                'type' => 'security',
+            ]
         ],
     ],
     'bridges' => [
@@ -123,7 +132,8 @@ return [
             ],
             'google' => [
                 'status' => true,
-                'sessions' => ['google_register', 'googler_auther', 'recovery', 'password']
+                'sessions' => ['google_register', 'googler_auther', 'recovery', 'password', 'auth'],
+                'field' => 'google_authenticator_secret'
             ],
             'password' => [
                 'status' => true,
@@ -152,6 +162,11 @@ return [
                 'message' => 'password change',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\Password::class
             ],
+            'login_policy' => [
+                'title' => 'Login Policy',
+                'message' => 'login policy',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\LoginPolicy::class
+            ],
             'email' => [
                 'title' => 'Mobile number verification',
                 'message' => 'mobile number verification',
@@ -161,6 +176,16 @@ return [
                 'title' => 'Mobile number change',
                 'message' => 'mobile number change',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\EmailChange::class
+            ],
+            'mobile' => [
+                'title' => 'Mobile verification',
+                'message' => 'mobile verification',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Mobile::class
+            ],
+            'mobile_change' => [
+                'title' => 'Mobile change',
+                'message' => 'mobile change',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\MobileChange::class
             ],
             'google_authenticator_register' => [
                 'title' => 'Google authenticator register',
@@ -172,16 +197,6 @@ return [
                 'message' => 'google authenticator verification',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticator::class
             ],
-            'mobile' => [
-                'title' => 'Mobile verification',
-                'message' => 'mobile verification',
-                'model' => \iLaravel\iAuth\Vendor\AuthSession\Mobile::class
-            ],
-            'mobile_change' => [
-                'title' => 'Mobile change',
-                'message' => 'mobile change',
-                'model' => \iLaravel\iAuth\Vendor\AuthSession\MobileChange::class
-            ]
         ]
     ]
 ];
