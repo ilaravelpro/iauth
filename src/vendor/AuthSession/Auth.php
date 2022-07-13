@@ -94,6 +94,7 @@ class Auth extends Session
                 $data['password'] = Hash::make($data['password']);
                 unset($data['terms']);
                 $register = $userModel::create($data);
+                $register->login_password_level = _level_password($data['password']);
                 if ($ref_status)
                 $register->update(['ref_code' => $request->ref_code]);
                 switch ($session->key) {

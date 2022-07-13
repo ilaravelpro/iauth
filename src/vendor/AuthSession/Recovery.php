@@ -25,6 +25,7 @@ class Recovery extends Session
         return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) {
             $user = $session->item();
             $user->password = Hash::make($request->input('password'));
+            $user->login_password_level = _level_password($request->input('password'));
             $user->save();
             $user->revokeAllTokens();
             $message = null;
