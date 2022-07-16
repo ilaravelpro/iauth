@@ -115,6 +115,15 @@ return [
                 'type' => 'security',
             ]
         ],
+        'any' => [
+            'status' => true,
+            'password' => [
+                'status' => true,
+                'before' => true,
+                'after' => true,
+                'type' => 'security',
+            ]
+        ],
     ],
     'bridges' => [
         'expired' => [
@@ -124,15 +133,15 @@ return [
         'models' => [
             'mobile' => [
                 'status' => true,
-                'sessions' => ['auth', 'register', 'recovery', 'password', 'mobile', 'mobile_change']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'mobile', 'mobile_change', 'login_policy']
             ],
             'email' => [
                 'status' => true,
-                'sessions' => ['auth', 'register', 'recovery', 'password', 'email', 'email_change']
+                'sessions' => ['auth', 'register', 'recovery', 'password', 'email', 'email_change', 'login_policy']
             ],
             'google' => [
                 'status' => true,
-                'sessions' => ['google_register', 'googler_auther', 'recovery', 'password', 'auth'],
+                'sessions' => ['google_register', 'googler_auther', 'recovery', 'password', 'auth', 'login_policy'],
                 'field' => 'google_authenticator_secret'
             ],
             'password' => [
@@ -196,6 +205,11 @@ return [
                 'title' => 'Google authenticator verification',
                 'message' => 'google authenticator verification',
                 'model' => \iLaravel\iAuth\Vendor\AuthSession\GoogleAuthenticator::class
+            ],
+            'any' => [
+                'title' => 'verification',
+                'message' => 'verification',
+                'model' => \iLaravel\iAuth\Vendor\AuthSession\Any::class
             ],
         ]
     ]
