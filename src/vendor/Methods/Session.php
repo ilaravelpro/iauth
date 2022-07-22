@@ -214,7 +214,7 @@ class Session
                     if ($second_bridge == 'email' || (!$second_bridge && in_array('email', $this->bridges)) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
                         $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
                         $mailModel = imodal('Mail\CodeMail');
-                        if ($this->session->item()->email) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
+                        if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
                         $methods[] = 'email';
                     }
                 }
