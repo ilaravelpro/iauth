@@ -48,7 +48,7 @@ class Recovery extends Session
             case 'verify':
                 return [
                     'password' => 'required|min:6|password',
-                    'password_confirm' => 'required|same:password',
+                    'password_confirmation' => 'required|same:password',
                 ];
                 break;
         }
