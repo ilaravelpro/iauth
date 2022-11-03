@@ -33,8 +33,8 @@ class Auth extends Session
         $newUser = false;
         if (!in_array($this->username_method, ['username', 'id']) && !($user) && iauth('methods.register.auto.status'))
             list($user, $newUser) = [$this->register($request), true];
-        elseif(!in_array($this->username_method, ['username', 'id']) && !($user) && in_array($this->type, ['code', 'pass_code']))
-            list($user, $newUser) = [$this->model::guest(), true];
+        /*elseif(!in_array($this->username_method, ['username', 'id']) && !($user) && in_array($this->type, ['code', 'pass_code']))
+            list($user, $newUser) = [$this->model::guest(), true];*/
         if ($user) {
             list($result, $message, $session) = $this->vendor::pass($request, $user, $this->type, $this->username_method, UserSummary::class, $user, $this->method, function ($request, $result, $session, $methods, $field) use($newUser) {
                 $session->update(['meta->new_user' => $newUser]);

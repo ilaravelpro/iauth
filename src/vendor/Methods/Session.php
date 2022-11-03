@@ -205,17 +205,31 @@ class Session
                     $bridge = $this->session->bridgesByMobile()->create(['method' => 'google']);
                     $methods[] = 'google';
                 }else {
+                    $mobile_error = false;
                     if ($second_bridge == 'mobile' || (!$second_bridge && in_array('mobile', $this->bridges))) {
-                        $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
-                        if (function_exists('isms_send'))
-                            isms_send("iauth.methods.{$this->session->session}.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, ['code' => $bridge->pin]);
-                        $methods[] = 'mobile';
+                        try {
+                            $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
+                            if (function_exists('isms_send'))
+                                isms_send("iauth.methods.{$this->session->session}.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, ['code' => $bridge->pin]);
+                            $methods[] = 'mobile';
+                        }catch (\Throwable $exception) {
+                            if ($second_bridge != 'email' || !in_array('email', $this->bridges)) {
+                                throw new iException('Please enter a valid mobile number.');
+                            }else
+                                $mobile_error = true;
+                        }
                     }
                     if ($second_bridge == 'email' || (!$second_bridge && in_array('email', $this->bridges)) && (($this->session->item()->role != 'guest' && $this->session->item()->email) || filter_var($this->session->value, FILTER_VALIDATE_EMAIL))) {
-                        $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
-                        $mailModel = imodal('Mail\CodeMail');
-                        if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
-                        $methods[] = 'email';
+                        try {
+                            $bridge = $this->session->bridgesByEmail()->create(['method' => 'email']);
+                            $mailModel = imodal('Mail\CodeMail');
+                            if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
+                            $methods[] = 'email';
+                        }catch (\Throwable $exception) {
+                            if ($second_bridge != 'mobile' || !in_array('mobile', $this->bridges) || $mobile_error) {
+                                throw new iException('Please enter a valid mobile number.');
+                            }
+                        }
                     }
                 }
             }

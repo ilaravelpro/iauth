@@ -18,7 +18,7 @@ class Bridge
         $field_other = iauth('bridges.models.' .$verify_other. '.field', $verify_other);
         if (in_array(iauth('methods.verify.mode'), $activists))
             $bridges = [iauth('methods.verify.mode')];
-        elseif (iauth('methods.verify.mode') !== 'all' && $model->{$field_other} && (isset($bridges[0]) ? !$bridges[0] == 'google' : true)) {
+        elseif (iauth('methods.verify.mode') !== 'all' && $model->{$field_other} && (isset($bridges[0]) ? $bridges[0] !== 'google' : true)) {
             $bridges = [in_array($method, $activists) ? $method : iauth('methods.verify.other')];
             $bridges = count($bridges) ? $bridges : $activists;
         }
