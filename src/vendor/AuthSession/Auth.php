@@ -66,12 +66,12 @@ class Auth extends Session
         $userModel = imodal('User');
         $ref_status = iauth('methods.register.ref', false);
         $authSession = $this->sessionModel::findByToken($session, $token);
-        if (!$authSession) throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$authSession->session}.message")))]);
+        if (!$authSession) throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
         $user = $authSession->item();
-        if ($user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
+        if (!isset($authSession->meta['new_user']) && $user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
             throw new AuthenticationException('Authorization data is not match');
         }
-        if ($ref_status && $request->ref_code && is_string($request->ref_code) && !$userModel::id($request->ref_code)){
+        if ($ref_status && $request->ref_code && is_string($request->ref_code) && !($ref_id = $userModel::id($request->ref_code))){
             throw ValidationException::withMessages(['ref_code' => 'Invitation Code is invalid']);
         }
         $fields = handel_fields([], array_keys($this->rules($request, 'verify')), $request->all());
@@ -86,7 +86,7 @@ class Auth extends Session
             return [$result, $message];
         }
         return $this->vendor::verify($request, $session, $token, $pin, UserSummary::class, function ($request2, $result, $session, $bridge) use ($fields, $request, $pin, $userModel, $ref_status) {
-            if ($pin && $this->type == 'pass_code' && $session->item()->role == 'guest') {
+            if ($pin && $this->type == 'pass_code' && $session->item()->role != 'guest') {
                 $data = [];
                 foreach ($fields as $value)
                     if (_has_key($request->toArray(), $value))
@@ -95,8 +95,8 @@ class Auth extends Session
                 unset($data['terms']);
                 $register = $userModel::create($data);
                 $register->login_password_level = _level_password($data['password']);
-                if ($ref_status)
-                $register->update(['ref_code' => $request->ref_code]);
+                if ($ref_status && $userModel::id($request->ref_code))
+                    $register->update(['agent_id' => $userModel::id($request->ref_code)]);
                 switch ($session->key) {
                     case 'mobile':
                         $register->saveMobile($session->value, Carbon::now()->format('Y-m-d H:i:s'));
