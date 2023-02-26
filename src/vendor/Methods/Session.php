@@ -226,8 +226,9 @@ class Session
                             if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
                             $methods[] = 'email';
                         }catch (\Throwable $exception) {
-                            if ($second_bridge != 'mobile' || !in_array('mobile', $this->bridges) || $mobile_error) {
-                                throw new iException('Please enter a valid mobile number.');
+                            dd($exception->getMessage());
+                            if ($second_bridge != 'email' || !in_array('email', $this->bridges) || $mobile_error) {
+                                throw new iException('Please enter a valid email.');
                             }
                         }
                     }

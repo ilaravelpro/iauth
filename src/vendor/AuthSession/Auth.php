@@ -86,14 +86,14 @@ class Auth extends Session
             return [$result, $message];
         }
         return $this->vendor::verify($request, $session, $token, $pin, UserSummary::class, function ($request2, $result, $session, $bridge) use ($fields, $request, $pin, $userModel, $ref_status) {
-            if ($pin && $this->type == 'pass_code' && $session->item()->role != 'guest') {
+            if ($pin && $this->type == 'pass_code' && isset($session->meta['new_user']) && $session->meta['new_user']) {
                 $data = [];
                 foreach ($fields as $value)
                     if (_has_key($request->toArray(), $value))
                         $data = _set_value($data, $value, _get_value($request->toArray(), $value));
                 $data['password'] = Hash::make($data['password']);
                 unset($data['terms']);
-                $register = $userModel::create($data);
+                $register = $session->model_id ? $session->item()->update($data) : $userModel::create($data);
                 $register->login_password_level = _level_password($data['password']);
                 if ($ref_status && $userModel::id($request->ref_code))
                     $register->update(['agent_id' => $userModel::id($request->ref_code)]);
