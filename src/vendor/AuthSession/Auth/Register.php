@@ -25,7 +25,7 @@ trait Register
         $data[$this->username_method] = $request->input($this->username_method);
         $data['role'] = 'user';
         if (isset($this->type) && in_array($this->type, ['code', 'pass_code']))
-            $data['status'] = 'watting';
+            $data['status'] = 'waiting';
         $register = $this->model::create($data);
         return $register;
     }
