@@ -51,7 +51,7 @@ class Session
 
     public function checkPassword($position, $request, $session, $callback = null){
         $ok = true;
-        if (!isset($session->meta['new_user']) && $session->item()->role != 'guest' && iauth("methods.{$session->session}.password.{$position}")){
+        if (!isset($session->meta['new_user']) && $session->meta['new_user'] && $session->item()->role != 'guest' && iauth("methods.{$session->session}.password.{$position}")){
             $type = iauth("methods.{$session->session}.password.type", 'login');
             if ($type == "login")
                 $ok = Hash::check($request->input('password') ? : $request->input($type.'_password'), $session->item()->password);
