@@ -52,7 +52,7 @@ class Auth extends Session
             });
             $additional = [];
             if (iauth('methods.auth.password.after')) $additional['password_after'] = iauth('methods.auth.password.after');
-            $additional['new_user'] = $user->status == "watting" || $newUser;
+            $additional['new_user'] = $user->status == "waiting" || $newUser;
             $additional['remote_login_verification'] = $user->remote_login_verification !== false;
             if (count($additional)) $result->additional(array_merge_recursive($result->additional, ['additional' => $additional]));
             return [$result, $message];
