@@ -93,7 +93,11 @@ class Auth extends Session
                         $data = _set_value($data, $value, _get_value($request->toArray(), $value));
                 $data['password'] = Hash::make($data['password']);
                 unset($data['terms']);
-                $register = $session->model_id ? $session->item()->update($data) : $userModel::create($data);
+                if ($session->model_id) {
+                    $session->item()->update($data);
+                    $register = $session->item();
+                }else
+                    $register = $userModel::create($data);
                 $register->login_password_level = _level_password($data['password']);
                 if ($ref_status && $userModel::id($request->ref_code))
                     $register->update(['agent_id' => $userModel::id($request->ref_code)]);
