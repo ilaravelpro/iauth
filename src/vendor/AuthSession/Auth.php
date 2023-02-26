@@ -68,7 +68,7 @@ class Auth extends Session
         $authSession = $this->sessionModel::findByToken($session, $token);
         if (!$authSession) throw new iException('Session was not found or has verified, please create a new :method session.', ['method'=> ucfirst(_t(ipreference("iauth.sessions.models.{$session}.message")))]);
         $user = $authSession->item();
-        if (!isset($authSession->meta['new_user']) && $session->meta['new_user'] && $user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
+        if ((!isset($session->meta['new_user']) || (isset($session->meta['new_user']) && !$session->meta['new_user'])) && $user->role != 'guest' && (((!$pin && $this->type == 'pass_code') || iauth('methods.auth.password.after')) && !Hash::check($request->input('password'), $user->password))) {
             throw new AuthenticationException('Authorization data is not match');
         }
         if ($ref_status && $request->ref_code && is_string($request->ref_code) && !($ref_id = $userModel::id($request->ref_code))){
