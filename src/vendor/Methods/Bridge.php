@@ -18,7 +18,7 @@ class Bridge
         $field_other = iauth('bridges.models.' .$verify_other. '.field', $verify_other);
         if (in_array(iauth('methods.verify.mode'), $activists))
             $bridges = [iauth('methods.verify.mode')];
-        elseif (iauth('methods.verify.mode') !== 'all' && $model->{$field_other} && (isset($bridges[0]) ? $bridges[0] !== 'google' : true)) {
+        elseif (iauth('methods.verify.mode') !== 'all' && $model->{$field_other} && (isset($bridges[0]) ? !$bridges[0] == 'google' : true)) {
             $bridges = [in_array($method, $activists) ? $method : iauth('methods.verify.other')];
             $bridges = count($bridges) ? $bridges : $activists;
         }
@@ -29,7 +29,7 @@ class Bridge
     {
         $bridges = array_filter(iauth('bridges.models'), function ($bridge, $key) use ($model, $theory, $session) {
             $field = isset($bridge['field']) && $bridge['field'] ? $bridge['field'] : $key;
-            return $bridge['status'] && in_array($theory, $bridge['sessions']) && ($model && $model->role !== 'guest' && $theory != $key ? $model->{$field} : true);
+            return $bridge['status'] && in_array($theory, $bridge['sessions']) && ($model && $theory != $key && $session->key !== $key ? $model->{$field} : true);
         }, 1);
         return $key ? is_string($key) ? array_column($bridges, $key) : array_keys($bridges) : $bridges;
     }
