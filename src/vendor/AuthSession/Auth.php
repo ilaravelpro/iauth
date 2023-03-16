@@ -86,7 +86,7 @@ class Auth extends Session
             return [$result, $message];
         }
         return $this->vendor::verify($request, $session, $token, $pin, UserSummary::class, function ($request2, $result, $session, $bridge) use ($fields, $request, $pin, $userModel, $ref_status) {
-            if ($pin && $this->type == 'pass_code' && isset($session->meta['new_user']) && $session->meta['new_user']) {
+            if ($pin && $this->type == 'pass_code' && ((isset($session->meta['new_user']) && $session->meta['new_user']) || $session->item()->status == "waiting")) {
                 $data = [];
                 foreach ($fields as $value)
                     if (_has_key($request->toArray(), $value))

@@ -69,7 +69,8 @@ class Session
         if ($authSession = $this->sessionModel::findByToken($session, $token)) {
             $this->checkPassword('after', $request, $authSession);
             $ga = GoogleAuthenticator::check($request, $authSession->item(), $pin);
-            if (($authSession->item()->role == 'guest' || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
+            //dd($authSession->item()->status == "waiting", !in_array($authSession->session, iauth('methods.verify.never', [])) , $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first()));
+            if (($authSession->item()->status == "waiting" || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
                 if ($ga){
                     $bridge->pin = $pin;
                     $authSession->meta = array_merge(['google' => true], $authSession->meta ? : []);
@@ -226,7 +227,6 @@ class Session
                             if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
                             $methods[] = 'email';
                         }catch (\Throwable $exception) {
-                            dd($exception->getMessage());
                             if ($second_bridge != 'email' || !in_array('email', $this->bridges) || $mobile_error) {
                                 throw new iException('Please enter a valid email.');
                             }
