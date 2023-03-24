@@ -77,7 +77,7 @@ class Any extends Session
                 $rules = [
                     'enter' => "required|string" . (count($enters) ? ("|in:" . implode(",", $enters)) : ""),
                 ];
-                if (iauth("methods.{$this->method}.password.before"))
+                if (iauth("methods.{$this->method}.password.before") && $type)
                     $rules[$type . '_password'] = 'required|min:6';
                 return $rules;
                 break;
