@@ -25,8 +25,9 @@ class Any extends Session
     public function store(Request $request, $user = null, $mobile = null)
     {
         $this->username_method = $request->input('enter');
-        $request->merge([$this->username_method => ""]);
-        $user = $user ? : auth()->user();
+        if (iauth("methods.{$this->method}.enters.".$this->username_method .".value") != "request")
+            $request->merge([$this->username_method => ""]);
+        $user = $user ? : (iauth("methods.{$this->method}.enters.".$this->username_method .".not_user") == "guest" ? $this->model::guest() : auth()->user());
         $title = iauth("methods.{$this->method}.enters.".$this->username_method .".title", str_replace("_", ' ', ucfirst($this->username_method)));
         Config::set("ilaravel.main.iauth.sessions.models.any.message", $title . " " . ipreference("iauth.sessions.models.any.title"));
         Config::set("ilaravel.main.iauth.sessions.models.any.message", $title . " " . ipreference("iauth.sessions.models.any.message"));
@@ -71,15 +72,14 @@ class Any extends Session
 
     public function rules(Request $request, $action) {
         $type = iauth("methods.{$this->method}.password.type", 'login');
-        $enters = array_keys(iauth("methods.{$this->method}.enters", []));
+        $enters = iauth("methods.{$this->method}.enters", []);
         switch ($action) {
             case 'store':
                 $rules = [
-                    'enter' => "required|string" . (count($enters) ? ("|in:" . implode(",", $enters)) : ""),
+                    'enter' => "required|string" . (count($enters) ? ("|in:" . implode(",", array_keys($enters))) : ""),
                 ];
                 if (iauth("methods.{$this->method}.password.before") && $type)
                     $rules[$type . '_password'] = 'required|min:6';
-                return $rules;
                 break;
             case 'verify':
                 $second_bridges = iauth('methods.' . $this->method . '.second_bridges', []);
@@ -89,8 +89,11 @@ class Any extends Session
                 }
                 if (iauth("methods.{$this->method}.password.after"))
                     $rules[$type . '_password'] = 'required|min:6';
-                return $rules;
                 break;
         }
+        if (count($enters) && is_array($enters) && isset($enters[$request->enter]['rules']) && is_callable($enters[$request->enter]['rules'])) {
+            $enters[$request->enter]['rules']($this, $request, $action, $rules, $type, $enters);
+        }
+        return $rules;
     }
 }

@@ -51,8 +51,13 @@ class Session
 
     public function checkPassword($position, $request, $session, $callback = null){
         $ok = true;
-        if ((!isset($session->meta['new_user']) || (isset($session->meta['new_user']) && !$session->meta['new_user'])) && $session->item()->role != 'guest' && iauth("methods.{$session->session}.password.{$position}")){
-            $type = iauth("methods.{$session->session}.password.type", 'login');
+
+        $position_session = $session->session == "any" ? iauth("methods.{$session->session}.enters.".$session->method .".password.{$position}", null) : null;
+        $position_session = $position_session ?: iauth("methods.{$session->session}.password.{$position}", 'login');
+
+        if ((!isset($session->meta['new_user']) || (isset($session->meta['new_user']) && !$session->meta['new_user'])) && iauth("methods.{$session->session}.password.{$position}")){
+            $type = $session->session == "any" ? iauth("methods.{$session->session}.enters.".$session->method .".password.type", null) : null;
+            $type = $type ?: iauth("methods.{$session->session}.password.type", 'login');
             if ($type == "login")
                 $ok = Hash::check($request->input('password') ? : $request->input($type.'_password'), $session->item()->password);
             else
@@ -69,7 +74,6 @@ class Session
         if ($authSession = $this->sessionModel::findByToken($session, $token)) {
             $this->checkPassword('after', $request, $authSession);
             $ga = GoogleAuthenticator::check($request, $authSession->item(), $pin);
-            //dd($authSession->item()->status == "waiting", !in_array($authSession->session, iauth('methods.verify.never', [])) , $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first()));
             if (($authSession->item()->status == "waiting" || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
                 if ($ga){
                     $bridge->pin = $pin;
@@ -166,7 +170,7 @@ class Session
     public function _tryPass(Request $request, $session, $token, $resource, $callback = null)
     {
         $this->request = $request;
-        if ($this->session = $this->sessionModel::findByToken($session, $token)) {
+        if ($this->session = $this->sessionModel::findByToken($session, $token, false)) {
             $this->creator = $this->session->creator;
             $this->model = $this->session->item();
             $this->method = $this->session->key;
@@ -181,6 +185,10 @@ class Session
     {
         $methods = [];
         $this->bridges = Bridge::sort($this->model, $this->session, $this->session->session, $this->method);
+        if ($this->session->session == "any") {
+            $enters = iauth("methods.{$this->session->session}.enters", []);
+            $this->bridges = isset($enters[$this->method]['bridges']) ? $enters[$this->method]['bridges'] : iauth("methods.{$this->session->session}.second_bridges", []);
+        }
         if (!count($this->bridges))
             throw new AuthenticationException('Not found Verify Method.');
         $this->session->save();
@@ -207,11 +215,32 @@ class Session
                     $methods[] = 'google';
                 }else {
                     $mobile_error = false;
+                    $send_other_values = isset($enters) && isset($enters[$this->method]['send_other_values']) ? $enters[$this->method]['send_other_values'] : iauth("methods.{$this->session->session}.send_other_values", []);
+                    foreach ($send_other_values as $index => $send_other_value) {
+                        switch ($send_other_value) {
+                            case "request":
+                                $send_other_values[$index] = $this->request->$index;
+                                break;
+                            case "user":
+                                $send_other_values[$index] = $this->session->item()->$index;
+                                break;
+                            case "session":
+                                $send_other_values[$index] = $this->session->$index;
+                                break;
+                            default:
+                                $send_other_values[$index] = is_callable($send_other_value) ? $send_other_value($this) : $send_other_value;
+                                break;
+                        }
+                    }
                     if ($second_bridge == 'mobile' || (!$second_bridge && in_array('mobile', $this->bridges))) {
                         try {
                             $bridge = $this->session->bridgesByMobile()->create(['method' => 'mobile']);
-                            if (function_exists('isms_send'))
-                                isms_send("iauth.methods.{$this->session->session}.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, ['code' => $bridge->pin]);
+                            if (function_exists('isms_send')) {
+                                $name_sms = isset($enters) && ((isset($enters[$this->method]['sms']) && $enters[$this->method]['sms']) || !isset($enters[$this->method]['sms'])) ? "{$this->session->session}.{$this->method}" : $this->session->session;
+                                $send_other_values = array_filter($send_other_values, 'strlen');
+                                //isms_send("iauth.methods.$name_sms.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, array_merge($send_other_values ? : (isset($this->session->meta) && is_array($this->session->meta) && isset($this->session->meta['send_other_values']) ? $this->session->meta['send_other_values'] : []), ['code' => $bridge->pin]));
+                            }
+                            $this->session->update(['meta' => array_merge(isset($this->session->meta) && is_array($this->session->meta) ? $this->session->meta : [], ['send_other_values' => $send_other_values])]);
                             $methods[] = 'mobile';
                         }catch (\Throwable $exception) {
                             if ($second_bridge != 'email' || !in_array('email', $this->bridges)) {
@@ -227,7 +256,7 @@ class Session
                             if ($this->session->item()->email|| filter_var($this->session->value, FILTER_VALIDATE_EMAIL)) Mail::to([$this->session->item()->role != 'guest' && $this->session->item()->email? $this->session->item()->email->text :$this->session->value])->send(new $mailModel($this->session->session, $this->session->creator_id > 0 ? $this->session->creator : $this->session->item(), $this->model, $this->session, $bridge));
                             $methods[] = 'email';
                         }catch (\Throwable $exception) {
-                            if ($second_bridge != 'email' || !in_array('email', $this->bridges) || $mobile_error) {
+                            if ($second_bridge != 'mobile' || !in_array('mobile', $this->bridges) || $mobile_error) {
                                 throw new iException('Please enter a valid email.');
                             }
                         }
