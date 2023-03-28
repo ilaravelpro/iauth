@@ -238,7 +238,7 @@ class Session
                             if (function_exists('isms_send')) {
                                 $name_sms = isset($enters) && ((isset($enters[$this->method]['sms']) && $enters[$this->method]['sms']) || !isset($enters[$this->method]['sms'])) ? "{$this->session->session}.{$this->method}" : $this->session->session;
                                 $send_other_values = array_filter($send_other_values, 'strlen');
-                                //isms_send("iauth.methods.$name_sms.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, array_merge($send_other_values ? : (isset($this->session->meta) && is_array($this->session->meta) && isset($this->session->meta['send_other_values']) ? $this->session->meta['send_other_values'] : []), ['code' => $bridge->pin]));
+                                isms_send("iauth.methods.$name_sms.send.code", $second_bridge && $this->session->item()->mobile ? $this->session->item()->mobile->text  : $this->session->value, array_merge($send_other_values ? : (isset($this->session->meta) && is_array($this->session->meta) && isset($this->session->meta['send_other_values']) ? $this->session->meta['send_other_values'] : []), ['code' => $bridge->pin]));
                             }
                             $this->session->update(['meta' => array_merge(isset($this->session->meta) && is_array($this->session->meta) ? $this->session->meta : [], ['send_other_values' => $send_other_values])]);
                             $methods[] = 'mobile';
