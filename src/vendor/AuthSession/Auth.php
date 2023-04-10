@@ -134,7 +134,7 @@ class Auth extends Session
         if ($token) {
             $authSession = $authSession->where('token', $token);
         } else {
-            $authSession = $authSession->where('meta->passport', $this->model::findTokenID($bearerToken));
+            $authSession = $authSession->where('meta', 'like', "%".$this->model::findTokenID($bearerToken)."%");
         }
         $authSession = $authSession->where('revoked', 0)->first();
         $userM = imodal('User');
