@@ -189,7 +189,7 @@ class Session
             $enters = iauth("methods.{$this->session->session}.enters", []);
             $this->bridges = isset($enters[$this->method]['bridges']) ? $enters[$this->method]['bridges'] : iauth("methods.{$this->session->session}.second_bridges", []);
         }
-        if (!count($this->bridges))
+        if (!iauth('tester.username.' . $this->session->item()->username) && !count($this->bridges))
             throw new AuthenticationException('Not found Verify Method.');
         $this->session->save();
         request()->merge(['log_model' => class_name($this->sessionModel),'log_model_id' => $this->session->id, 'log_type' => $this->session->model,'log_type_id' => $this->model->id]);
