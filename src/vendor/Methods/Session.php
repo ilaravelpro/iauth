@@ -74,7 +74,7 @@ class Session
         if ($authSession = $this->sessionModel::findByToken($session, $token)) {
             $this->checkPassword('after', $request, $authSession);
             $ga = GoogleAuthenticator::check($request, $authSession->item(), $pin);
-            if (($authSession->item()->status == "waiting" || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
+            if ((($authSession->item()->role == "guest" || $authSession->item()->status == "waiting") || !in_array($authSession->session, iauth('methods.verify.never', []))) && $bridge = ($ga ? $authSession->bridges()->where('expires_at', '>', Carbon::now())->first() : $authSession->bridges()->where('pin', $pin)->where('expires_at', '>', Carbon::now())->first())) {
                 if ($ga){
                     $bridge->pin = $pin;
                     $authSession->meta = array_merge(['google' => true], $authSession->meta ? : []);
