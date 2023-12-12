@@ -187,7 +187,7 @@ class Session
         $this->bridges = Bridge::sort($this->model, $this->session, $this->session->session, $this->method);
         if ($this->session->session == "any") {
             $enters = iauth("methods.{$this->session->session}.enters", []);
-            $this->bridges = isset($enters[$this->method]['bridges']) ? $enters[$this->method]['bridges'] : iauth("methods.{$this->session->session}.second_bridges", []);
+            $this->bridges = isset($enters[$this->method]['bridges']) ? $enters[$this->method]['bridges'] : iauth("methods.{$this->session->session}.second_bridges", $this->bridges);
         }
         if (!iauth('tester.username.' . $this->session->item()->username) && !count($this->bridges))
             throw new AuthenticationException('Not found Verify Method.');
