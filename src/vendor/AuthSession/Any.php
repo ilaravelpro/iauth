@@ -64,7 +64,7 @@ class Any extends Session
 
         return $this->vendor::verify($request, $session, $token, $pin, iresource('User'), function ($request, $result, $session, $bridge) {
             $user = $session->item();
-            $user->save();
+            //$user->save();
             $message = _t(':type been set.', ['type' => iauth("methods.{$this->method}.enters.".$session->key .".title", str_replace("_", ' ', ucfirst($session->key)))]);
             return [$result, $message];
         });
