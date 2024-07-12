@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         parent::__construct($request);
         $this->model = imodal('User');
-        $this->resourceClass = iresource('User');
+        $this->resourceClass = iresource('UserAuth', iresource('User'));
     }
     
     use Show;
