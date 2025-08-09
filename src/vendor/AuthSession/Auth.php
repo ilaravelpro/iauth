@@ -18,7 +18,6 @@ use iLaravel\iAuth\iApp\Http\Resources\UserSummary;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Laravel\Passport\Token;
 
 class Auth extends Session
 {
@@ -143,7 +142,7 @@ class Auth extends Session
         $user = iresource('User');
         $authSession->update(['revoked' => 1]);
         $user = new $user($authSession->item());
-        if ($access = Token::where('id', $authSession->meta['passport'])->first())
+        if ($access = \Laravel\Passport\Token::where('id', $authSession->meta['passport'])->first())
             $access->update(['revoked' => 1]);
         return [$user, 'The session was successfully revoked.'];
     }
