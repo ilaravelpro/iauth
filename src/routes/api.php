@@ -14,7 +14,7 @@ Route::namespace('v1')->prefix('v1')->group(function() {
     if (iauth('methods.get.status')) Route::get('/me', 'AuthController@me')->name('api.iauth.get')->middleware('auth:apiIf');
     Route::prefix('iauth')->group(function() {
         if (iauth('routes.api.sessions.status'))
-            Route::prefix('session')->middleware("authOr")->group(function() {
+            Route::prefix('session')->middleware("authOr:api")->group(function() {
                 Route::group(['middleware' => ['auth:apiIf']], function () {
                     if (iauth('routes.api.sessions.revoke.status'))
                         Route::delete('/{session}/{token?}', 'AuthController@revoke')->name('api.iauth.session.revoke');
