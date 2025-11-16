@@ -20,7 +20,7 @@ class CreateAuthBridgesTable extends Migration
      */
     public function up()
     {
-        Schema::create('auth_bridges', function (Blueprint $table) {
+        Schema::smartCreate('auth_bridges', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('session_id')->unsigned();
             $table->string('method', 100);
@@ -31,7 +31,7 @@ class CreateAuthBridgesTable extends Migration
             $table->timestamps();
         });
         Schema::table('auth_bridges', function($table) {
-            $table->foreign('session_id')->references('id')->on('i_auth_sessions')->onDelete('cascade');
+            $table->foreign('session_id')->references('id')->on('auth_sessions')->noActionOnDelete();
         });
     }
 

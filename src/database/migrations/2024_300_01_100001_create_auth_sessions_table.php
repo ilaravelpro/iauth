@@ -20,20 +20,21 @@ class CreateAuthSessionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('auth_sessions', function (Blueprint $table) {
+        Schema::smartCreate('auth_sessions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('creator_id')->nullable()->unsigned();
             $table->string('model')->nullable();
             $table->bigInteger('model_id')->nullable();
-            $table->string('key', 110)->nullable()->index();
+            $table->string('key', 110)->nullable();
             $table->string('value', 110)->nullable();
-            $table->string('session', 50)->index();
+            $table->string('session', 50);
             $table->string('token')->nullable();
             $table->boolean('revoked')->default(0);
             $table->boolean('verified')->default(0);
             $table->text('ip')->nullable();
             $table->longText('meta')->nullable();
             $table->timestamp('expired_at')->nullable();
+            $table->index("key", "session");
             $table->timestamps();
         });
 
